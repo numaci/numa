@@ -14,9 +14,9 @@ interface OrderDetails {
   total: number;
   currency: string;
   createdAt: string;
-  shippingAddress: any;
-  deliveryZone: any;
-  paymentInfo: any;
+  shippingAddress: Record<string, unknown>;
+  deliveryZone: Record<string, unknown>;
+  paymentInfo: Record<string, unknown>;
   orderItems: OrderItem[];
 }
 

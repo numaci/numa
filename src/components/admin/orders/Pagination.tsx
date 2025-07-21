@@ -8,7 +8,7 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   total: number;
-  searchParams: any;
+  searchParams: Record<string, unknown>;
 }
 
 const Pagination: React.FC<PaginationProps> = ({

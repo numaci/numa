@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 // Types pour les catégories
 export interface Category {
@@ -25,7 +25,7 @@ interface CategoryFilters {
 
 // Hook personnalisé pour gérer les catégories
 export function useCategories() {
-  const router = useRouter();
+  // const router = useRouter();
   
   // États pour la gestion des données
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,11 +37,6 @@ export function useCategories() {
     search: "",
     status: "all",
   });
-
-  // États pour la suppression
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   // Chargement des catégories
   useEffect(() => {
@@ -62,7 +57,7 @@ export function useCategories() {
         const errorData = await response.json();
         setError(errorData.error || "Erreur lors du chargement des catégories");
       }
-    } catch (error) {
+    } catch {
       setError("Erreur de connexion");
     } finally {
       setLoading(false);
@@ -95,44 +90,6 @@ export function useCategories() {
     return matchesSearch && matchesStatus;
   });
 
-  // Ouverture du modal de suppression
-  const openDeleteModal = (category: Category) => {
-    setCategoryToDelete(category);
-    setDeleteModalOpen(true);
-  };
-
-  // Fermeture du modal de suppression
-  const closeDeleteModal = () => {
-    setDeleteModalOpen(false);
-    setCategoryToDelete(null);
-  };
-
-  // Confirmation de suppression
-  const confirmDelete = async () => {
-    if (!categoryToDelete) return;
-
-    try {
-      setDeleting(true);
-      
-      const response = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        // Supprimer la catégorie de la liste locale
-        setCategories(prev => prev.filter(cat => cat.id !== categoryToDelete.id));
-        closeDeleteModal();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Erreur lors de la suppression");
-      }
-    } catch (error) {
-      setError("Erreur de connexion lors de la suppression");
-    } finally {
-      setDeleting(false);
-    }
-  };
-
   // Création d'une nouvelle catégorie
   const createCategory = async (categoryData: Omit<Category, "id" | "productCount" | "createdAt" | "updatedAt">) => {
     try {
@@ -153,7 +110,7 @@ export function useCategories() {
         const errorData = await response.json();
         return { success: false, error: errorData.error };
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: "Erreur de connexion" };
     }
   };
@@ -180,7 +137,7 @@ export function useCategories() {
         const errorData = await response.json();
         return { success: false, error: errorData.error };
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: "Erreur de connexion" };
     }
   };
@@ -191,17 +148,11 @@ export function useCategories() {
     loading,
     error,
     filters,
-    deleteModalOpen,
-    categoryToDelete,
-    deleting,
     
     // Actions
     fetchCategories,
     updateFilters,
     resetFilters,
-    openDeleteModal,
-    closeDeleteModal,
-    confirmDelete,
     createCategory,
     updateCategory,
   };

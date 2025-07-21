@@ -59,9 +59,9 @@ export function useCart() {
         // console.error("useCart: Error loading cart", response.status, response.statusText);
         // setError("Impossible de charger le panier"); // Original code had this line commented out
       }
-    } catch (error) {
-      // console.error("useCart: Error loading cart", error);
-      // setError("Erreur de connexion"); // Original code had this line commented out
+    } catch {
+      // console.error("useCart: Error loading cart");
+      // setError("Erreur de connexion");
     } finally {
       setIsLoading(false);
     }
@@ -92,13 +92,12 @@ export function useCart() {
           // Recharger le panier depuis la base de données
           await loadCartFromDatabase();
         } else {
-          const errorData = await response.json();
           // console.error("useCart: Error adding to cart", errorData);
           // setError(errorData.error || "Erreur lors de l'ajout au panier"); // Original code had this line commented out
         }
-      } catch (error) {
-        // console.error("useCart: Error adding to cart", error);
-        // setError("Erreur de connexion"); // Original code had this line commented out
+      } catch {
+        // console.error("useCart: Error adding to cart");
+        // setError("Erreur de connexion");
       } finally {
         setIsLoading(false);
       }
@@ -132,9 +131,9 @@ export function useCart() {
           // console.error("useCart: Error removing from cart");
           // setError("Erreur lors de la suppression"); // Original code had this line commented out
         }
-      } catch (error) {
-        // console.error("useCart: Error removing from cart", error);
-        // setError("Erreur de connexion"); // Original code had this line commented out
+      } catch {
+        // console.error("useCart: Error removing from cart");
+        // setError("Erreur de connexion");
       } finally {
         setIsLoading(false);
       }
@@ -172,13 +171,12 @@ export function useCart() {
           // Recharger le panier depuis la base de données
           await loadCartFromDatabase();
         } else {
-          const errorData = await response.json();
           // console.error("useCart: Error updating quantity", errorData);
           // setError(errorData.error || "Erreur lors de la mise à jour"); // Original code had this line commented out
         }
-      } catch (error) {
-        // console.error("useCart: Error updating quantity", error);
-        // setError("Erreur de connexion"); // Original code had this line commented out
+      } catch {
+        // console.error("useCart: Error updating quantity");
+        // setError("Erreur de connexion");
       } finally {
         setIsLoading(false);
       }

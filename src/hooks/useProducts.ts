@@ -92,8 +92,8 @@ export function useProducts() {
         totalItems: data.total,
         totalPages: Math.ceil(data.total / pagination.itemsPerPage),
       }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur inconnue");
+    } catch {
+      setError("Erreur lors du chargement des produits");
     } finally {
       setLoading(false);
     }

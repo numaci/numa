@@ -26,7 +26,7 @@ async function getOrders(searchParams: Promise<OrdersPageProps["searchParams"]>)
   const skip = (page - 1) * limit;
 
   // Construction des filtres
-  const where: any = {};
+  const where: Record<string, unknown> = {};
 
   if (params.search) {
     where.OR = [

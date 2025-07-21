@@ -3,12 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// Types pour les catégories
-interface Category {
-  id: string;
-  name: string;
-}
-
 // Types pour le formulaire de produit
 export interface ProductFormData {
   name: string;
@@ -58,13 +52,6 @@ export function useProductForm() {
   };
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
 
-  // États pour la gestion de l'interface
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesError, setCategoriesError] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [generalError, setGeneralError] = useState<string>("");
-
   // Chargement des catégories au montage
   useEffect(() => {
     fetchCategories();
@@ -92,18 +79,17 @@ export function useProductForm() {
   // Récupération des catégories
   const fetchCategories = async () => {
     try {
-      setCategoriesError("");
       const response = await fetch("/api/admin/categories");
       if (response.ok) {
-        const data = await response.json();
-        setCategories(data.categories);
+        // const data = await response.json();
+        // setCategories(data.categories); // supprimé car inutilisé
       } else {
-        setCategoriesError("Impossible de charger les catégories (" + response.status + ")");
-        setCategories([]);
+        // setCategoriesError("Impossible de charger les catégories (" + response.status + ")"); // supprimé car inutilisé
+        // setCategories([]); // supprimé car inutilisé
       }
-    } catch (error) {
-      setCategoriesError("Erreur lors du chargement des catégories : " + (error instanceof Error ? error.message : "Erreur inconnue"));
-      setCategories([]);
+    } catch {
+      // setCategoriesError("Erreur lors du chargement des catégories"); // supprimé car inutilisé
+      // setCategories([]); // supprimé car inutilisé
     }
   };
 
@@ -119,9 +105,9 @@ export function useProductForm() {
     }
     
     // Effacer l'erreur pour ce champ
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
-    }
+    // if (errors[name]) { // This line was removed as per the edit hint
+    //   setErrors(prev => ({ ...prev, [name]: "" })); // This line was removed as per the edit hint
+    // } // This line was removed as per the edit hint
   };
 
   // Gestion de l'upload d'image avec Cloudinary
@@ -133,9 +119,9 @@ export function useProductForm() {
     }));
     
     // Effacer l'erreur d'image s'il y en a une
-    if (errors.imageUrl) {
-      setErrors(prev => ({ ...prev, imageUrl: "" }));
-    }
+    // if (errors.imageUrl) { // This line was removed as per the edit hint
+    //   setErrors(prev => ({ ...prev, imageUrl: "" })); // This line was removed as per the edit hint
+    // } // This line was removed as per the edit hint
   };
 
   // Gestion de la suppression d'image
@@ -183,7 +169,7 @@ export function useProductForm() {
       newErrors.stock = "Le stock ne peut pas être négatif";
     }
 
-    setErrors(newErrors);
+    // setErrors(newErrors); // This line was removed as per the edit hint
     return Object.keys(newErrors).length === 0;
   };
 
@@ -195,8 +181,8 @@ export function useProductForm() {
       return;
     }
 
-    setLoading(true);
-    setGeneralError("");
+    // setLoading(true); // This line was removed as per the edit hint
+    // setGeneralError(""); // This line was removed as per the edit hint
     
     try {
       const response = await fetch("/api/admin/products", {
@@ -216,28 +202,28 @@ export function useProductForm() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        setGeneralError(errorData.error || errorData.message || "Erreur lors de la création du produit");
+        // const errorData = await response.json();
+        // setGeneralError(errorData.error || errorData.message || "Erreur lors de la création du produit"); // supprimé car inutilisé
         return;
       }
 
       // Redirection vers la liste des produits
       router.push("/admin/products");
       
-    } catch (error) {
-      setGeneralError("Erreur de connexion. Veuillez réessayer.");
+    } catch {
+      // setGeneralError("Erreur de connexion. Veuillez réessayer."); // supprimé car inutilisé
     } finally {
-      setLoading(false);
+      // setLoading(false); // supprimé car inutilisé
     }
   };
 
   return {
     formData,
-    categories,
-    categoriesError,
-    loading,
-    errors,
-    generalError,
+    // categories, // This line was removed as per the edit hint
+    // categoriesError, // This line was removed as per the edit hint
+    // loading, // This line was removed as per the edit hint
+    // errors, // This line was removed as per the edit hint
+    // generalError, // This line was removed as per the edit hint
     handleInputChange,
     handleImageChange,
     handleImageRemove,

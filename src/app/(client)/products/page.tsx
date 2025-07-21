@@ -8,6 +8,33 @@ import { FaWhatsapp } from "react-icons/fa";
 import ProductGrid from "@/components/shop/ProductGrid";
 import CustomHorizontalScroll from "@/components/shop/CustomHorizontalScroll";
 import AdBannerCarousel from "@/components/shop/AdBannerCarousel";
+// Définition locale du type Product pour correspondre aux objets transformés
+type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  comparePrice?: number;
+  supplierPrice?: number;
+  shippingPrice?: number;
+  stock: number;
+  sku: string | null;
+  weight: number | null;
+  dimensions: string | null;
+  imageUrl?: string;
+  images?: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  isBest?: boolean;
+  isHealth?: boolean;
+  categoryId: string;
+  createdAt: string;
+  updatedAt: string;
+  status?: string;
+  refuseComment?: string | null;
+  variants: Array<{ id: string; name: string; value: string; price: number }>;
+};
 
 // Interface pour les paramètres de recherche
 interface SearchParams {
@@ -20,15 +47,33 @@ interface SearchParams {
 }
 
 // Fonction pour convertir les objets Decimal en nombres
-function transformProduct(product: Record<string, unknown>) {
+function transformProduct(product: any): Product {
   return {
-    ...product,
-    price: product.price ? Number(product.price) : 0,
-    comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
-    supplierPrice: product.supplierPrice ? Number(product.supplierPrice) : null,
-    shippingPrice: product.shippingPrice ? Number(product.shippingPrice) : null,
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    description: product.description,
+    price: typeof product.price === 'number' ? product.price : Number(product.price),
+    comparePrice: product.comparePrice !== undefined && product.comparePrice !== null ? Number(product.comparePrice) : undefined,
+    supplierPrice: product.supplierPrice !== undefined && product.supplierPrice !== null ? Number(product.supplierPrice) : undefined,
+    shippingPrice: product.shippingPrice !== undefined && product.shippingPrice !== null ? Number(product.shippingPrice) : undefined,
+    stock: product.stock,
+    sku: product.sku,
+    weight: product.weight,
+    dimensions: product.dimensions,
+    imageUrl: product.imageUrl !== null && product.imageUrl !== undefined ? product.imageUrl : undefined,
+    images: product.images !== null && product.images !== undefined ? product.images : undefined,
+    isActive: product.isActive,
+    isFeatured: product.isFeatured,
+    isBest: product.isBest,
+    isHealth: product.isHealth,
+    categoryId: product.categoryId,
+    createdAt: typeof product.createdAt === 'string' ? product.createdAt : product.createdAt?.toString() ?? '',
+    updatedAt: typeof product.updatedAt === 'string' ? product.updatedAt : product.updatedAt?.toString() ?? '',
+    status: product.status,
+    refuseComment: product.refuseComment,
     variants: Array.isArray(product.variants)
-      ? (product.variants as Array<any>).map((v: any) => ({ ...v, price: v.price ? Number(v.price) : 0 }))
+      ? product.variants.map((v: any) => ({ ...v, price: typeof v.price === 'number' ? v.price : Number(v.price) }))
       : [],
   };
 }
@@ -41,7 +86,7 @@ async function getProducts(searchParams: Promise<SearchParams>) {
   const skip = (page - 1) * limit;
 
   // Construction des filtres
-  const where: any = {
+  const where: Record<string, any> = {
     isActive: true, // Seulement les produits actifs
   };
 
@@ -73,7 +118,7 @@ async function getProducts(searchParams: Promise<SearchParams>) {
   }
 
   // Tri
-  let orderBy: any = { createdAt: "desc" };
+  let orderBy: Record<string, any> = { createdAt: "desc" };
   if (params.sort) {
     switch (params.sort) {
       case "price-asc":
@@ -319,7 +364,7 @@ export default async function ProductsPage({
               return product ? transformProduct(product) : null;
             })
           );
-          const topSellingProducts = topSellingProductsRaw.filter(Boolean);
+          const topSellingProducts = topSellingProductsRaw.filter(Boolean).map(transformProduct);
           return topSellingProducts.length > 0 ? (
             <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8 my-8 rounded-2xl bg-gradient-to-br from-amber-50/80 to-white shadow-sm">
               <div className="flex items-center justify-start mb-4 gap-2">

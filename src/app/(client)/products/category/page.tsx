@@ -8,7 +8,7 @@ import CartDebug from "@/components/debug/CartDebug";
 import CartCounter from "@/components/debug/CartCounter";
 
 // Fonction pour convertir les objets Decimal en nombres
-function transformProduct(product: any) {
+function transformProduct(product: Record<string, unknown>) {
   return {
     ...product,
     price: product.price ? Number(product.price) : 0,

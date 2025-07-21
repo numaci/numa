@@ -3,7 +3,7 @@ import ProductGrid from "@/components/shop/ProductGrid";
 import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa";
 
-function transformProduct(product: any) {
+function transformProduct(product: Record<string, unknown>) {
   return {
     ...product,
     price: product.price ? Number(product.price) : 0,

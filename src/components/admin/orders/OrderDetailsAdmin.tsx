@@ -7,7 +7,7 @@ import { FaArrowLeft, FaUser, FaMapMarkerAlt, FaPhone, FaCreditCard, FaTruck, Fa
 import { Trash2, MoreVertical } from "lucide-react";
 
 interface OrderDetailsAdminProps {
-  order: any;
+  order: Record<string, unknown>;
 }
 
 const getStatusInfo = (status: string) => {

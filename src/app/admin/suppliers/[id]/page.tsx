@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { useState } from "react";
 import AddSupplierPayment from "./AddSupplierPayment";
+import { headers } from "next/headers";
 
 async function getSupplier(id: string) {
-  const host = typeof window === 'undefined' ? require('next/headers').headers().get('host') : window.location.host;
+  const host = headers().get('host');
   const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
   const res = await fetch(`${protocol}://${host}/api/admin/suppliers/${id}`, { cache: "no-store" });
   if (!res.ok) return null;
@@ -14,7 +14,7 @@ async function getSupplier(id: string) {
   }
 }
 async function getProducts(id: string) {
-  const host = typeof window === 'undefined' ? require('next/headers').headers().get('host') : window.location.host;
+  const host = headers().get('host');
   const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
   const res = await fetch(`${protocol}://${host}/api/admin/suppliers/${id}/products`, { cache: "no-store" });
   if (!res.ok) return [];
@@ -25,7 +25,7 @@ async function getProducts(id: string) {
   }
 }
 async function getSales(id: string) {
-  const host = typeof window === 'undefined' ? require('next/headers').headers().get('host') : window.location.host;
+  const host = headers().get('host');
   const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
   const res = await fetch(`${protocol}://${host}/api/admin/suppliers/${id}/sales`, { cache: "no-store" });
   if (!res.ok) return [];
@@ -36,7 +36,7 @@ async function getSales(id: string) {
   }
 }
 async function getPayments(id: string) {
-  const host = typeof window === 'undefined' ? require('next/headers').headers().get('host') : window.location.host;
+  const host = headers().get('host');
   const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
   const res = await fetch(`${protocol}://${host}/api/admin/suppliers/${id}/payments`, { cache: "no-store" });
   if (!res.ok) return [];

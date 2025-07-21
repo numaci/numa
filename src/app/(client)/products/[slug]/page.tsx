@@ -51,7 +51,7 @@ type ProductDetail = {
   _count: {
     reviews: number;
   };
-  attributes?: any;
+  attributes?: Record<string, unknown>;
   variants?: Array<{ id: string; name: string; value: string; price: number }>;
 };
 
@@ -68,7 +68,7 @@ function transformProduct(product: Record<string, unknown>): ProductDetail {
     createdAt: product.createdAt?.toString() ?? "",
     updatedAt: product.updatedAt?.toString() ?? "",
     reviews: product.reviews
-      ? (product.reviews as Array<any>).map((r: any) => ({
+      ? (product.reviews as Array<Record<string, unknown>>).map((r: Record<string, unknown>) => ({
           ...r,
           createdAt: r.createdAt ? r.createdAt.toString() : "",
         }))
@@ -76,14 +76,14 @@ function transformProduct(product: Record<string, unknown>): ProductDetail {
     _count: product._count ?? { reviews: 0 },
     attributes: product.attributes ?? {},
     variants: product.variants
-      ? (product.variants as Array<any>).map((v: any) => ({
+      ? (product.variants as Array<Record<string, unknown>>).map((v: Record<string, unknown>) => ({
           ...v,
           price: v.price ? Number(v.price) : 0,
         }))
       : [],
     category: {
       ...(product.category as Record<string, unknown>),
-      slug: product.category?.slug ?? "",
+      slug: (product.category as Record<string, unknown>)?.slug ?? "",
     },
   };
 }
@@ -173,8 +173,8 @@ async function getSimilarProducts(productId: string, categoryId: string, price: 
 }
 
 // Page de détail produit
-export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const product = await getProductBySlug(slug);
 
   if (!product) {

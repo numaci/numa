@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const { id } = await Promise.resolve(params);
+    const { id } = params;
 
     // Récupération du produit avec sa catégorie ET ses variantes
     const product = await prisma.product.findUnique({
@@ -77,7 +77,7 @@ export async function PUT(
       );
     }
 
-    const { id } = await Promise.resolve(params);
+    const { id } = params;
 
     // Vérification que le produit existe
     const existingProduct = await prisma.product.findUnique({
@@ -258,7 +258,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = await Promise.resolve(params);
+    const { id } = params;
 
     // Vérification que le produit existe
     const existingProduct = await prisma.product.findUnique({

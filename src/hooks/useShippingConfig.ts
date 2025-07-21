@@ -19,7 +19,7 @@ export function useShippingConfig() {
           if (res.ok) {
             data = await res.json();
           }
-        } catch (jsonErr) {
+        } catch {
           // JSON invalide ou vide
           data = null;
         }

@@ -64,7 +64,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
             image: user.image
           };
-        } catch (error: unknown) {
+        } catch {
           return null;
         }
       }
