@@ -1,0 +1,9 @@
+// Export de tous les composants de formulaire
+export { default as ProductFormSection } from "./ProductFormSection";
+export { default as FormField } from "./FormField";
+export { default as ProductBasicInfo } from "./ProductBasicInfo";
+export { default as ProductPricing } from "./ProductPricing";
+export { default as ProductImages } from "./ProductImages";
+export { default as ProductOptions } from "./ProductOptions";
+export { default as FormActions } from "./FormActions";
+export { default as PageHeader } from "./PageHeader"; 

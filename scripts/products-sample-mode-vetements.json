@@ -1,0 +1,117 @@
+[
+  {
+    "name": "Sneakers Nike Air Max 270",
+    "description": "Chaussures de sport confortables avec amorti Air Max",
+    "stock": 30,
+    "price": 45000,
+    "comparePrice": 55000,
+    "variants": [
+      { "name": "Pointure", "value": "41", "price": 45000 },
+      { "name": "Pointure", "value": "42", "price": 45000 },
+      { "name": "Pointure", "value": "43", "price": 45000 }
+    ]
+  },
+  {
+    "name": "Sac à dos The North Face",
+    "description": "Sac à dos 30L imperméable pour randonnée et voyage",
+    "stock": 20,
+    "price": 35000,
+    "comparePrice": 42000,
+    "variants": [
+      { "name": "Couleur", "value": "Noir", "price": 35000 },
+      { "name": "Couleur", "value": "Bleu", "price": 35500 }
+    ]
+  },
+  {
+    "name": "T-shirt Adidas Originals",
+    "description": "T-shirt coton, logo brodé",
+    "stock": 50,
+    "price": 12000,
+    "comparePrice": 15000,
+    "variants": [
+      { "name": "Taille", "value": "S", "price": 12000 },
+      { "name": "Taille", "value": "M", "price": 12000 },
+      { "name": "Taille", "value": "L", "price": 12000 }
+    ]
+  },
+  {
+    "name": "Jean Levi's 501",
+    "description": "Jean coupe droite, denim brut",
+    "stock": 18,
+    "price": 32000,
+    "comparePrice": 40000,
+    "variants": [
+      { "name": "Taille", "value": "38", "price": 32000 },
+      { "name": "Taille", "value": "40", "price": 32000 },
+      { "name": "Taille", "value": "42", "price": 32000 }
+    ]
+  },
+  {
+    "name": "Robe d'été Zara",
+    "description": "Robe légère, imprimé floral",
+    "stock": 25,
+    "price": 22000,
+    "comparePrice": 27000,
+    "variants": [
+      { "name": "Taille", "value": "S", "price": 22000 },
+      { "name": "Taille", "value": "M", "price": 22000 },
+      { "name": "Taille", "value": "L", "price": 22000 }
+    ]
+  },
+  {
+    "name": "Montre Casio Vintage",
+    "description": "Montre digitale, bracelet acier",
+    "stock": 15,
+    "price": 18000,
+    "comparePrice": 22000,
+    "variants": [
+      { "name": "Couleur", "value": "Or", "price": 18000 },
+      { "name": "Couleur", "value": "Argent", "price": 18500 }
+    ]
+  },
+  {
+    "name": "Casquette New Era NY",
+    "description": "Casquette brodée, ajustable",
+    "stock": 40,
+    "price": 9000,
+    "comparePrice": 12000,
+    "variants": [
+      { "name": "Couleur", "value": "Noir", "price": 9000 },
+      { "name": "Couleur", "value": "Bleu", "price": 9500 }
+    ]
+  },
+  {
+    "name": "Veste en jean H&M",
+    "description": "Veste denim, coupe droite",
+    "stock": 12,
+    "price": 28000,
+    "comparePrice": 35000,
+    "variants": [
+      { "name": "Taille", "value": "M", "price": 28000 },
+      { "name": "Taille", "value": "L", "price": 28000 },
+      { "name": "Taille", "value": "XL", "price": 28000 }
+    ]
+  },
+  {
+    "name": "Ceinture en cuir Fossil",
+    "description": "Ceinture 100% cuir, boucle métal",
+    "stock": 30,
+    "price": 15000,
+    "comparePrice": 18000,
+    "variants": [
+      { "name": "Taille", "value": "100cm", "price": 15000 },
+      { "name": "Taille", "value": "110cm", "price": 15500 }
+    ]
+  },
+  {
+    "name": "Lunettes de soleil RayBan",
+    "description": "Lunettes UV400, monture noire",
+    "stock": 22,
+    "price": 35000,
+    "comparePrice": 42000,
+    "variants": [
+      { "name": "Couleur", "value": "Noir", "price": 35000 },
+      { "name": "Couleur", "value": "Marron", "price": 35500 }
+    ]
+  }
+] 

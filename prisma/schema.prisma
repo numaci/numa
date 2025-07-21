@@ -1,0 +1,310 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  email                 String?                @unique
+  phone                 String?                @unique
+  password              String
+  firstName             String?
+  lastName              String?
+  role                  Role                   @default(USER)
+  emailVerified         DateTime?
+  image                 String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  welcomeMessageSent    Boolean                @default(false)
+  passwordResetRequests PasswordResetRequest[]
+  addresses             Address[]
+  cartItems             CartItem[]
+  orders                Order[]
+  reviews               Review[]
+
+  @@map("users")
+}
+
+model Product {
+  id            String           @id @default(cuid())
+  name          String
+  slug          String           @unique
+  description   String
+  price         Decimal          @db.Decimal(10, 2)
+  comparePrice  Decimal?         @db.Decimal(10, 2)
+  stock         Int              @default(0)
+  sku           String?          @unique
+  weight        Float?
+  dimensions    String?
+  imageUrl      String?
+  images        String?
+  isActive      Boolean          @default(true)
+  isFeatured    Boolean          @default(false)
+  isBest        Boolean          @default(false)
+  isHealth      Boolean          @default(false)
+  categoryId    String
+  attributes    Json?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  supplierPrice Decimal          @db.Decimal(10, 2)
+  supplierId    String?
+  status        ProductStatus    @default(PENDING)
+  refuseComment String?
+  shippingPrice Decimal?         @db.Decimal(10, 2)
+  ads           Ad[]
+  variants      ProductVariant[]
+  sections      SectionProduct[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  category      Category         @relation(fields: [categoryId], references: [id])
+  supplier      Supplier?        @relation(fields: [supplierId], references: [id])
+  reviews       Review[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  name      String
+  value     String
+  price     Decimal @db.Decimal(10, 2)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  description  String?
+  imageUrl     String?
+  isActive     Boolean       @default(true)
+  isPublic     Boolean       @default(false)
+  parentId     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  ads          Ad[]          @relation("CategoryAds")
+  homeSections HomeSection[]
+  parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children     Category[]    @relation("CategoryHierarchy")
+  products     Product[]
+
+  @@map("categories")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String
+  status          OrderStatus @default(PENDING_PAYMENT)
+  total           Decimal     @db.Decimal(10, 2)
+  currency        String      @default("XOF")
+  shippingAddress String
+  deliveryZone    String
+  paymentInfo     String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
+  user            User        @relation(fields: [userId], references: [id])
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  name      String
+  sku       String?
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
+
+model Address {
+  id         String      @id @default(cuid())
+  userId     String
+  type       AddressType
+  firstName  String
+  lastName   String
+  company    String?
+  address1   String
+  address2   String?
+  city       String
+  state      String?
+  postalCode String
+  country    String
+  phone      String?
+  isDefault  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@map("addresses")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  productId  String
+  rating     Int
+  title      String?
+  comment    String?
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  product    Product  @relation(fields: [productId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, productId])
+  @@map("reviews")
+}
+
+model Ad {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  buttonText  String
+  imageUrl    String?
+  link        String?
+  bgColor     String?
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  productId   String?
+  categoryId  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  category    Category? @relation("CategoryAds", fields: [categoryId], references: [id])
+  product     Product?  @relation(fields: [productId], references: [id])
+}
+
+model Supplier {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  phone     String?
+  address   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model WhatsappConfig {
+  id             String   @id @default(cuid())
+  number         String
+  type           String
+  label          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  welcomeMessage String?
+
+  @@map("whatsapp_configs")
+}
+
+model ShippingConfig {
+  id            String   @id @default(cuid())
+  city          String
+  freeThreshold Int
+  fee           Int
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model HomeSection {
+  id         String           @id @default(cuid())
+  title      String
+  order      Int              @default(0)
+  isActive   Boolean          @default(true)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  categoryId String?
+  category   Category?        @relation(fields: [categoryId], references: [id])
+  products   SectionProduct[]
+}
+
+model SectionProduct {
+  id        String      @id @default(cuid())
+  sectionId String
+  productId String
+  order     Int         @default(0)
+  product   Product     @relation(fields: [productId], references: [id])
+  section   HomeSection @relation(fields: [sectionId], references: [id])
+}
+
+model WhatsappLead {
+  id        String   @id @default(cuid())
+  phone     String
+  createdAt DateTime @default(now())
+
+  @@map("whatsapp_leads")
+}
+
+model PasswordResetRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+  status    String   @default("pending")
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model NotificationConfig {
+  id          String   @id
+  email       String
+  senderEmail String?
+  updatedAt   DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_VERIFIED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+enum ProductStatus {
+  PENDING
+  PUBLISHED
+  REFUSED
+}
