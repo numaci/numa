@@ -79,7 +79,7 @@ export const authOptions: NextAuthOptions = {
   // Configuration des callbacks
   callbacks: {
     // Callback appelé lors de la création du JWT
-    async jwt({ token, user }: { token: any; user?: User }) {
+    async jwt({ token, user }: { token: Record<string, unknown>; user?: User }) {
       // Ajout des informations utilisateur au token JWT
       if (user) {
         token.role = user.role;
@@ -92,7 +92,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     // Callback appelé lors de la récupération de la session
-    async session({ session, token }: { session: Session; token: any }) {
+    async session({ session, token }: { session: Session; token: Record<string, unknown> }) {
       // Ajout des informations du token à la session
       if (token) {
         session.user.id = token.id as string;

@@ -56,7 +56,7 @@ type ProductDetail = {
 };
 
 // Fonction pour convertir les objets Decimal/Date en types utilisables côté client
-function transformProduct(product: any): ProductDetail {
+function transformProduct(product: Record<string, unknown>): ProductDetail {
   return {
     ...product,
     price: product.price ? Number(product.price) : 0,
@@ -68,7 +68,7 @@ function transformProduct(product: any): ProductDetail {
     createdAt: product.createdAt?.toString() ?? "",
     updatedAt: product.updatedAt?.toString() ?? "",
     reviews: product.reviews
-      ? product.reviews.map((r: any) => ({
+      ? (product.reviews as Array<any>).map((r: any) => ({
           ...r,
           createdAt: r.createdAt ? r.createdAt.toString() : "",
         }))
@@ -76,14 +76,14 @@ function transformProduct(product: any): ProductDetail {
     _count: product._count ?? { reviews: 0 },
     attributes: product.attributes ?? {},
     variants: product.variants
-      ? product.variants.map((v: any) => ({
+      ? (product.variants as Array<any>).map((v: any) => ({
           ...v,
           price: v.price ? Number(v.price) : 0,
         }))
       : [],
     category: {
-      ...product.category,
-      slug: product.category.slug ?? "",
+      ...(product.category as Record<string, unknown>),
+      slug: product.category?.slug ?? "",
     },
   };
 }

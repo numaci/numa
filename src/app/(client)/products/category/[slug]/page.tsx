@@ -9,16 +9,16 @@ interface CategoryPageProps {
   params: {
     slug: string;
   };
-  searchParams: Promise<{
+  searchParams: {
     page?: string;
     sort?: string;
     minPrice?: string;
     maxPrice?: string;
     inStock?: string;
-  }>;
+  };
 }
 
-export default async function CategoryPage({ params, searchParams }: { params: { slug: string }, searchParams: any }) {
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   // Récupérer la catégorie par slug
   const category = await prisma.category.findUnique({
     where: { slug: params.slug },
@@ -61,7 +61,7 @@ export default async function CategoryPage({ params, searchParams }: { params: {
     };
   }
 
-  const params_search = await searchParams;
+  const params_search = searchParams;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

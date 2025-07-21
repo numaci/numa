@@ -3,7 +3,7 @@ import { User, Shield, Mail, Calendar, MapPin } from 'lucide-react'
 import Image from "next/image";
 
 interface UserDetailsProps {
-  user: any
+  user: Record<string, unknown>
 }
 
 export function UserDetails({ user }: UserDetailsProps) {

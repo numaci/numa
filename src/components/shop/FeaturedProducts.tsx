@@ -4,7 +4,7 @@ import ProductGrid from "./ProductGrid";
 
 // Interface pour les props des produits
 interface FeaturedProductsProps {
-  products: Array<any>; // Type à définir selon la structure des produits
+  products: Array<Record<string, unknown>>; // Type à définir selon la structure des produits
 }
 
 // Section des produits en vedette

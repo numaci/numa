@@ -34,7 +34,7 @@ interface ProductInfoProps {
     _count: {
       reviews: number;
     };
-    attributes?: any;
+    attributes?: Record<string, unknown>;
   };
 }
 

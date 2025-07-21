@@ -264,7 +264,7 @@ export interface TableColumn<T> {
   key: keyof T;
   label: string;
   sortable?: boolean;
-  render?: (value: any, item: T) => React.ReactNode;
+  render?: (value: unknown, item: T) => React.ReactNode;
   width?: string;
 }
 
@@ -285,6 +285,6 @@ export interface SortOptions {
 // Types pour les options de filtrage
 export interface FilterOptions {
   field: string;
-  value: any;
+  value: unknown;
   operator: 'equals' | 'contains' | 'greater' | 'less' | 'in' | 'notIn';
 } 

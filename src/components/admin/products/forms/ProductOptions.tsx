@@ -14,9 +14,9 @@ interface Category {
 }
 
 interface ProductOptionsProps {
-  formData: any;
-  onInputChange: (e: React.ChangeEvent<any>) => void;
-  onAttributesChange?: (attributes: any) => void;
+  formData: unknown;
+  onInputChange: (e: React.ChangeEvent<unknown>) => void;
+  onAttributesChange?: (attributes: unknown) => void;
   categories: Category[];
 }
 
@@ -28,38 +28,38 @@ export default function ProductOptions({
   categories,
 }: ProductOptionsProps) {
   // Trouver le nom de la catégorie à partir de l'id
-  const category = categories.find((cat) => cat.id === formData.categoryId)?.name;
+  const category = categories.find((cat) => cat.id === (formData as any).categoryId)?.name;
 
   // Gestion des attributs dynamiques
-  const handleAttributeChange = (e: React.ChangeEvent<any>) => {
-    const { name, value, type, options, checked } = e.target;
+  const handleAttributeChange = (e: React.ChangeEvent<unknown>) => {
+    const { name, value, type, options, checked } = (e.target as any);
     let newValue: any = value;
     if (type === "checkbox") {
       newValue = checked;
     } else if (type === "select-multiple") {
       newValue = Array.from(options).filter((o: any) => o.selected).map((o: any) => o.value);
     }
-    const updated = { ...formData.attributes, [name]: newValue };
+    const updated = { ...(formData as any).attributes, [name]: newValue };
     if (onAttributesChange) onAttributesChange(updated);
   };
 
   // Gestion des variantes dynamiques
   const [variantName, setVariantName] = useState("");
   const [variantValue, setVariantValue] = useState("");
-  const variants = formData.variants || [];
+  const variants = (formData as any).variants || [];
   const handleAddVariant = () => {
     if (!variantName || !variantValue) return;
     const newVariants = [...variants, { name: variantName, value: variantValue }];
-    if (onInputChange) onInputChange({ target: { name: "variants", value: newVariants } });
+    onInputChange({ target: { name: "variants", value: newVariants } });
     setVariantName("");
     setVariantValue("");
   };
   const handleRemoveVariant = (idx: number) => {
     const newVariants = variants.filter((_: any, i: number) => i !== idx);
-    if (onInputChange) onInputChange({ target: { name: "variants", value: newVariants } });
+    onInputChange({ target: { name: "variants", value: newVariants } });
   };
   // Gestion du prix de livraison
-  const shippingPrice = formData.shippingPrice ?? "";
+  const shippingPrice = (formData as any).shippingPrice ?? "";
   const isFreeShipping = shippingPrice === 0 || shippingPrice === "0";
   const handleShippingPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onInputChange(e);
@@ -76,13 +76,13 @@ export default function ProductOptions({
       {category === "Vêtements" && (
         <>
           <label className="block font-semibold">Tailles disponibles</label>
-          <select multiple name="sizes" value={formData.attributes?.sizes || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
+          <select multiple name="sizes" value={(formData as any).attributes?.sizes || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
             {CLOTHING_SIZES.map((size) => (
               <option key={size} value={size}>{size}</option>
             ))}
           </select>
           <label className="block font-semibold mt-2">Couleurs</label>
-          <select multiple name="colors" value={formData.attributes?.colors || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
+          <select multiple name="colors" value={(formData as any).attributes?.colors || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
             {COLORS.map((color) => (
               <option key={color} value={color}>{color}</option>
             ))}
@@ -92,20 +92,20 @@ export default function ProductOptions({
       {category === "Téléphones" && (
         <>
           <label className="block font-semibold">Stockage</label>
-          <select name="storage" value={formData.attributes?.storage || ""} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
+          <select name="storage" value={(formData as any).attributes?.storage || ""} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
             <option value="">Choisir</option>
             {PHONE_STORAGES.map((storage) => (
               <option key={storage} value={storage}>{storage}</option>
             ))}
           </select>
           <label className="block font-semibold mt-2">Couleurs</label>
-          <select multiple name="colors" value={formData.attributes?.colors || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
+          <select multiple name="colors" value={(formData as any).attributes?.colors || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
             {COLORS.map((color) => (
               <option key={color} value={color}>{color}</option>
             ))}
           </select>
           <label className="block font-semibold mt-2">État</label>
-          <select name="condition" value={formData.attributes?.condition || ""} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
+          <select name="condition" value={(formData as any).attributes?.condition || ""} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
             <option value="">Choisir</option>
             <option value="neuf">Neuf</option>
             <option value="occasion">Occasion</option>
@@ -115,13 +115,13 @@ export default function ProductOptions({
       {category === "Chaussures" && (
         <>
           <label className="block font-semibold">Pointures disponibles</label>
-          <select multiple name="sizes" value={formData.attributes?.sizes || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
+          <select multiple name="sizes" value={(formData as any).attributes?.sizes || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
             {SHOE_SIZES.map((size) => (
               <option key={size} value={size}>{size}</option>
             ))}
           </select>
           <label className="block font-semibold mt-2">Couleurs</label>
-          <select multiple name="colors" value={formData.attributes?.colors || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
+          <select multiple name="colors" value={(formData as any).attributes?.colors || []} onChange={handleAttributeChange} className="w-full border rounded-lg p-2">
             {COLORS.map((color) => (
               <option key={color} value={color}>{color}</option>
             ))}
@@ -132,7 +132,7 @@ export default function ProductOptions({
       {!["Vêtements", "Téléphones", "Chaussures"].includes(category || "") && (
         <>
           <label className="block font-semibold">Attributs personnalisés</label>
-          <input type="text" name="custom" value={formData.attributes?.custom || ""} onChange={handleAttributeChange} className="w-full border rounded-lg p-2" placeholder="Ex: Couleur, taille, etc." />
+          <input type="text" name="custom" value={(formData as any).attributes?.custom || ""} onChange={handleAttributeChange} className="w-full border rounded-lg p-2" placeholder="Ex: Couleur, taille, etc." />
         </>
       )}
 
@@ -181,7 +181,7 @@ export default function ProductOptions({
           type="checkbox"
           id="isActive"
           name="isActive"
-          checked={formData.isActive}
+          checked={(formData as any).isActive}
           onChange={onInputChange}
           className="h-5 w-5 text-orange-500 focus:ring-orange-400 border-orange-200 rounded-xl transition"
         />
@@ -194,7 +194,7 @@ export default function ProductOptions({
           type="checkbox"
           id="isFeatured"
           name="isFeatured"
-          checked={formData.isFeatured}
+          checked={(formData as any).isFeatured}
           onChange={onInputChange}
           className="h-5 w-5 text-orange-500 focus:ring-orange-400 border-orange-200 rounded-xl transition"
         />
@@ -207,7 +207,7 @@ export default function ProductOptions({
           type="checkbox"
           id="isBest"
           name="isBest"
-          checked={formData.isBest || false}
+          checked={(formData as any).isBest || false}
           onChange={onInputChange}
           className="h-5 w-5 text-amber-500 focus:ring-amber-500 border-amber-200 rounded-xl transition"
         />

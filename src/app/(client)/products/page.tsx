@@ -20,7 +20,7 @@ interface SearchParams {
 }
 
 // Fonction pour convertir les objets Decimal en nombres
-function transformProduct(product: any) {
+function transformProduct(product: Record<string, unknown>) {
   return {
     ...product,
     price: product.price ? Number(product.price) : 0,
@@ -28,7 +28,7 @@ function transformProduct(product: any) {
     supplierPrice: product.supplierPrice ? Number(product.supplierPrice) : null,
     shippingPrice: product.shippingPrice ? Number(product.shippingPrice) : null,
     variants: Array.isArray(product.variants)
-      ? product.variants.map((v: any) => ({ ...v, price: v.price ? Number(v.price) : 0 }))
+      ? (product.variants as Array<any>).map((v: any) => ({ ...v, price: v.price ? Number(v.price) : 0 }))
       : [],
   };
 }

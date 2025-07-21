@@ -45,7 +45,7 @@ interface ProductDetailInfoProps {
     _count: {
       reviews: number;
     };
-    attributes?: any;
+    attributes?: Record<string, unknown>;
     variants?: Array<{ id: string; name: string; value: string; price: number }>;
   };
   whatsappNumber: string;

@@ -3,7 +3,7 @@ import { formatCurrency } from "@/lib/utils";
 import { FiTrendingUp } from "react-icons/fi";
 
 interface TopSellingProductsProps {
-  topSellingProducts: any[];
+  topSellingProducts: Array<Record<string, unknown>>;
 }
 
 const totalAmount = (p: any) => Number(p.price) * p._sum.quantity;

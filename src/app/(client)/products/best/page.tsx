@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import ProductGrid from "@/components/shop/ProductGrid";
 
 // Fonction pour convertir les objets Decimal en nombres
-function transformProduct(product: any) {
+function transformProduct(product: Record<string, unknown>) {
   return {
     ...product,
     price: product.price ? Number(product.price) : 0,
