@@ -35,11 +35,11 @@ export async function uploadImage(
         ],
         ...options
       },
-      (error, result) => {
+      (error, _result) => {
         if (error) {
           reject(error)
-        } else if (result) {
-          resolve(result as CloudinaryUploadResult)
+        } else if (_result) {
+          resolve(_result as CloudinaryUploadResult)
         } else {
           reject(new Error('Upload failed'))
         }
