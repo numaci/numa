@@ -10,9 +10,10 @@ interface UserPageProps {
   }
 }
 
-export async function generateMetadata({ params }: UserPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
   const user = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id },
     select: { firstName: true, lastName: true, email: true }
   })
 
@@ -28,9 +29,10 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
   }
 }
 
-export default async function UserPage({ params }: UserPageProps) {
+export default async function UserPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       orders: {
         orderBy: { createdAt: 'desc' },

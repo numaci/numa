@@ -1,12 +1,9 @@
-import { useCallback } from "react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import ProductDetailImages from "@/components/shop/ProductDetailImages";
 import ProductDetailClient from "./ProductDetailClient";
 import SimilarProducts from "@/components/shop/SimilarProducts";
 import ProductBreadcrumbs from "@/components/shop/ProductBreadcrumbs";
-import { FaShareAlt } from "react-icons/fa";
-import ShareButtonClient from "./ShareButtonClient";
 import { ImageKitProvider } from "@imagekit/next";
 
 // Définir un type local pour le produit détaillé utilisé dans la page
@@ -68,7 +65,7 @@ function transformProduct(product: Record<string, unknown>): ProductDetail {
     createdAt: product.createdAt?.toString() ?? "",
     updatedAt: product.updatedAt?.toString() ?? "",
     reviews: product.reviews
-      ? (product.reviews as Array<Record<string, unknown>>).map((r: Record<string, unknown>) => ({
+      ? (product.reviews as Array<unknown>).map((r: any) => ({
           ...r,
           createdAt: r.createdAt ? r.createdAt.toString() : "",
         }))
@@ -76,7 +73,7 @@ function transformProduct(product: Record<string, unknown>): ProductDetail {
     _count: product._count ?? { reviews: 0 },
     attributes: product.attributes ?? {},
     variants: product.variants
-      ? (product.variants as Array<Record<string, unknown>>).map((v: Record<string, unknown>) => ({
+      ? (product.variants as Array<unknown>).map((v: any) => ({
           ...v,
           price: v.price ? Number(v.price) : 0,
         }))
@@ -173,8 +170,8 @@ async function getSimilarProducts(productId: string, categoryId: string, price: 
 }
 
 // Page de détail produit
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const product = await getProductBySlug(slug);
 
   if (!product) {

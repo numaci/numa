@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
     const session = await getServerSession(authOptions);
     
@@ -14,7 +15,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const orderId = params.id;
+    const orderId = id;
     const body = await request.json();
     const { status, deliveryTime } = body;
 
@@ -98,10 +99,8 @@ export async function PATCH(
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     const session = await getServerSession(authOptions);
     
@@ -109,7 +108,7 @@ export async function GET(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const orderId = params.id;
+    const orderId = id;
 
     // Récupérer la commande avec tous les détails
     const order = await prisma.order.findUnique({
@@ -166,17 +165,15 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const orderId = params.id;
+    const orderId = id;
 
     // Supprimer d'abord les orderItems liés à la commande
     await prisma.orderItem.deleteMany({ where: { orderId } });

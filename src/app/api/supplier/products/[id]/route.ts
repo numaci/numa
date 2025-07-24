@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
-    const product = await prisma.product.findUnique({ where: { id: params.id } });
+    const product = await prisma.product.findUnique({ where: { id } });
     if (!product) return NextResponse.json({ error: "Produit introuvable." }, { status: 404 });
     return NextResponse.json(product);
   } catch (error) {
@@ -11,7 +12,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     const {
       name,
@@ -27,7 +29,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       return NextResponse.json({ error: "Champs obligatoires manquants." }, { status: 400 });
     }
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         imageUrl,

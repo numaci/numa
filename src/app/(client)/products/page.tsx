@@ -1,13 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import ProductsLayout from "@/components/shop/ProductsLayout";
-import ProductsCarousel from "@/components/shop/ProductsCarousel";
-import TopCategories from "@/components/shop/TopCategories";
-import Image from "next/image";
-import AdBanner from "@/components/shop/AdBanner";
 import { FaWhatsapp } from "react-icons/fa";
 import ProductGrid from "@/components/shop/ProductGrid";
 import CustomHorizontalScroll from "@/components/shop/CustomHorizontalScroll";
 import AdBannerCarousel from "@/components/shop/AdBannerCarousel";
+import Image from "next/image";
 // Définition locale du type Product pour correspondre aux objets transformés
 type Product = {
   id: string;
@@ -47,33 +44,34 @@ interface SearchParams {
 }
 
 // Fonction pour convertir les objets Decimal en nombres
-function transformProduct(product: any): Product {
+function transformProduct(product: unknown): Product {
+  const p = product as any;
   return {
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    description: product.description,
-    price: typeof product.price === 'number' ? product.price : Number(product.price),
-    comparePrice: product.comparePrice !== undefined && product.comparePrice !== null ? Number(product.comparePrice) : undefined,
-    supplierPrice: product.supplierPrice !== undefined && product.supplierPrice !== null ? Number(product.supplierPrice) : undefined,
-    shippingPrice: product.shippingPrice !== undefined && product.shippingPrice !== null ? Number(product.shippingPrice) : undefined,
-    stock: product.stock,
-    sku: product.sku,
-    weight: product.weight,
-    dimensions: product.dimensions,
-    imageUrl: product.imageUrl !== null && product.imageUrl !== undefined ? product.imageUrl : undefined,
-    images: product.images !== null && product.images !== undefined ? product.images : undefined,
-    isActive: product.isActive,
-    isFeatured: product.isFeatured,
-    isBest: product.isBest,
-    isHealth: product.isHealth,
-    categoryId: product.categoryId,
-    createdAt: typeof product.createdAt === 'string' ? product.createdAt : product.createdAt?.toString() ?? '',
-    updatedAt: typeof product.updatedAt === 'string' ? product.updatedAt : product.updatedAt?.toString() ?? '',
-    status: product.status,
-    refuseComment: product.refuseComment,
-    variants: Array.isArray(product.variants)
-      ? product.variants.map((v: any) => ({ ...v, price: typeof v.price === 'number' ? v.price : Number(v.price) }))
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    description: p.description,
+    price: typeof p.price === 'number' ? p.price : Number(p.price),
+    comparePrice: p.comparePrice !== undefined && p.comparePrice !== null ? Number(p.comparePrice) : undefined,
+    supplierPrice: p.supplierPrice !== undefined && p.supplierPrice !== null ? Number(p.supplierPrice) : undefined,
+    shippingPrice: p.shippingPrice !== undefined && p.shippingPrice !== null ? Number(p.shippingPrice) : undefined,
+    stock: p.stock,
+    sku: p.sku,
+    weight: p.weight,
+    dimensions: p.dimensions,
+    imageUrl: p.imageUrl !== null && p.imageUrl !== undefined ? p.imageUrl : undefined,
+    images: p.images !== null && p.images !== undefined ? p.images : undefined,
+    isActive: p.isActive,
+    isFeatured: p.isFeatured,
+    isBest: p.isBest,
+    isHealth: p.isHealth,
+    categoryId: p.categoryId,
+    createdAt: typeof p.createdAt === 'string' ? p.createdAt : p.createdAt?.toString() ?? '',
+    updatedAt: typeof p.updatedAt === 'string' ? p.updatedAt : p.updatedAt?.toString() ?? '',
+    status: p.status,
+    refuseComment: p.refuseComment,
+    variants: Array.isArray(p.variants)
+      ? p.variants.map((v: any) => ({ ...v, price: typeof v.price === 'number' ? v.price : Number(v.price) }))
       : [],
   };
 }
@@ -164,7 +162,14 @@ async function getProducts(searchParams: Promise<SearchParams>) {
     ]);
 
     // Conversion des objets Decimal en nombres et sécurisation de variants
-    const products = rawProducts.map(transformProduct);
+    const products = rawProducts.map(p => {
+  const prod = transformProduct(p);
+  // Ensure imageUrl is a full URL or add base URL if needed
+  if (prod.imageUrl && !prod.imageUrl.startsWith('http')) {
+    prod.imageUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}${prod.imageUrl}` : prod.imageUrl;
+  }
+  return prod;
+});
 
     const totalPages = Math.ceil(totalProducts / limit);
 
@@ -303,7 +308,16 @@ export default async function ProductsPage({
               >
                 <div className="relative w-full aspect-square">
                   {cat.imageUrl ? (
-                    <img src={cat.imageUrl} alt={cat.name} className="absolute inset-0 w-full h-full object-cover rounded-xl group-hover:scale-105 transition" />
+                    <Image
+                      src={cat.imageUrl || '/images/placeholder.jpg'} 
+                      alt={cat.name}
+                      fill
+                      className="absolute inset-0 w-full h-full object-cover rounded-xl group-hover:scale-105 transition"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      priority={false}
+                      loading="lazy"
+                      quality={75}
+                    />
                   ) : (
                     <div className="absolute inset-0 w-full h-full bg-orange-100 flex items-center justify-center text-xs text-orange-400 rounded-xl">Aucune</div>
                   )}
@@ -405,4 +419,4 @@ export default async function ProductsPage({
       </main>
     </div>
   );
-} 
+}

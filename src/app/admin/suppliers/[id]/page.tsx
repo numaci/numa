@@ -47,12 +47,13 @@ async function getPayments(id: string) {
   }
 }
 
-export default async function SupplierDetailPage({ params }: { params: { id: string } }) {
+export default async function SupplierDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const [supplier, products, sales, payments] = await Promise.all([
-    getSupplier(params.id),
-    getProducts(params.id),
-    getSales(params.id),
-    getPayments(params.id),
+    getSupplier(id),
+    getProducts(id),
+    getSales(id),
+    getPayments(id),
   ]);
 
   if (!supplier) {

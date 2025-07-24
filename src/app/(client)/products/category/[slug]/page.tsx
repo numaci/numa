@@ -5,23 +5,12 @@ import CategoryProductList from "./CategoryProductList";
 import CustomHorizontalScroll from "@/components/shop/CustomHorizontalScroll";
 import ProductGrid from "@/components/shop/ProductGrid";
 
-interface CategoryPageProps {
-  params: {
-    slug: string;
-  };
-  searchParams: {
-    page?: string;
-    sort?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    inStock?: string;
-  };
-}
-
-export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+export default async function CategoryPage({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ page?: string; sort?: string; minPrice?: string; maxPrice?: string; inStock?: string }> }) {
+  const { slug } = await params;
+  const params_search = await searchParams;
   // Récupérer la catégorie par slug
   const category = await prisma.category.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     select: {
       id: true,
       name: true,
@@ -36,11 +25,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   }
 
   // Breadcrumbs
-  const breadcrumbs = [
-    { label: "Accueil", href: "/" },
-    { label: "Produits", href: "/products" },
-    { label: category.name, href: `/products/category/${category.slug}` },
-  ];
+  // const breadcrumbs = [
+  //   { label: "Accueil", href: "/" },
+  //   { label: "Produits", href: "/products" },
+  //   { label: category.name, href: `/products/category/${category.slug}` },
+  // ];
 
   // Récupérer les sections personnalisées de la catégorie
   const homeSections = await prisma.homeSection.findMany({
@@ -53,15 +42,13 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       }
     }
   });
-  function transformProduct(product: any) {
+  function transformProduct(product: unknown) {
     return {
       ...product,
-      price: product.price ? Number(product.price) : 0,
-      comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+      price: (product as any).price ? Number((product as any).price) : 0,
+      comparePrice: (product as any).comparePrice ? Number((product as any).comparePrice) : null,
     };
   }
-
-  const params_search = searchParams;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

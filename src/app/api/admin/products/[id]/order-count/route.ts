@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 // GET /api/admin/products/[id]/order-count
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Vérification de l'authentification et des permissions admin
@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await context.params;
     // Compter le nombre d'order_items pour ce produit
     const count = await prisma.orderItem.count({
       where: { productId: id },

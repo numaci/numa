@@ -170,7 +170,7 @@ export default function OrdersPage() {
               Aucune commande trouvée
             </h3>
             <p className="text-gray-600 mb-6">
-              Vous n'avez pas encore passé de commande.
+              Vous n&#39;avez pas encore de commandes.
             </p>
             <button
               onClick={() => router.push("/products")}

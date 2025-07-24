@@ -62,14 +62,15 @@ async function getOrderDetails(orderId: string) {
   return serializedOrder;
 }
 
-export default async function OrderDetailsPage({ params }: OrderDetailsPageProps) {
+export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user || session.user.role !== "ADMIN") {
     redirect("/admin/login");
   }
 
-  const order = await getOrderDetails(params.id);
+  const { id } = await params;
+  const order = await getOrderDetails(id);
 
   if (!order) {
     redirect("/admin/orders");

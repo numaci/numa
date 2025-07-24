@@ -15,4 +15,4 @@ export async function POST(request: Request, { params }: { params: { id: string 
   } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la mise à jour' }, { status: 500 });
   }
-} 
+}

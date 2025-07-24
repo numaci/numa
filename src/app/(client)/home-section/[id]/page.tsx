@@ -3,11 +3,17 @@ import ProductGrid from "@/components/shop/ProductGrid";
 import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa";
 
-function transformProduct(product: Record<string, unknown>) {
+function transformProduct(product: Record<string, any>) {
   return {
-    ...product,
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
     price: product.price ? Number(product.price) : 0,
-    comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+    comparePrice: product.comparePrice !== undefined && product.comparePrice !== null ? Number(product.comparePrice) : undefined,
+    imageUrl: product.imageUrl ?? undefined,
+    isActive: product.isActive ?? true,
+    stock: product.stock ?? 0,
+    isFeatured: product.isFeatured ?? false,
   };
 }
 
@@ -25,7 +31,11 @@ export default async function HomeSectionPage({ params }: { params: Promise<{ id
   });
   if (!section) return <div className="max-w-4xl mx-auto py-12 text-center text-gray-500">Section introuvable</div>;
 
-  const products = section.products.map(sp => sp.product).filter(Boolean).map(transformProduct);
+  const products = section.products
+    .map(sp => sp.product)
+    .filter(Boolean)
+    .map(transformProduct)
+    .filter(p => p.id && p.name && p.slug && p.comparePrice !== null); // Ensure all required fields and comparePrice is not null
   const productIds = products.map(p => p.id);
 
   // Proposer d'autres produits actifs non présents dans la section
@@ -38,7 +48,7 @@ export default async function HomeSectionPage({ params }: { params: Promise<{ id
     take: 8,
     include: { category: { select: { name: true, slug: true } } }
   });
-  const otherProducts = otherProductsRaw.map(transformProduct);
+  const otherProducts = otherProductsRaw.map(transformProduct).filter(p => p.comparePrice !== null);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-orange-50 py-6">

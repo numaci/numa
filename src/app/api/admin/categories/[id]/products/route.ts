@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET: Liste des produits actifs de la catégorie
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
-  const categoryId = params.id;
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  const categoryId = id;
   const products = await prisma.product.findMany({
     where: { categoryId, isActive: true },
     select: {

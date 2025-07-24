@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   if (!id) {
     return NextResponse.json({ error: "ID manquant" }, { status: 400 });
   }

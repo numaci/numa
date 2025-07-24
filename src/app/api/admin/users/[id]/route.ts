@@ -1,14 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 // Récupérer un utilisateur spécifique
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         orders: {
           orderBy: { createdAt: 'desc' },
@@ -42,44 +43,39 @@ export async function GET(
 }
 
 // Modifier un utilisateur
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
-    const body = await request.json()
-    const { firstName, lastName, role, emailVerified } = body
+    const body = await request.json();
+    const { firstName, lastName, role, emailVerified } = body;
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         firstName,
         lastName,
         role,
         emailVerified: emailVerified ? new Date() : null
       }
-    })
+    });
 
-    return NextResponse.json(user)
+    return NextResponse.json(user);
   } catch (error) {
-    console.error('Erreur lors de la modification de l\'utilisateur:', error)
+    console.error('Erreur lors de la modification de l\'utilisateur:', error);
     return NextResponse.json(
       { error: 'Erreur interne du serveur' },
       { status: 500 }
-    )
+    );
   }
 }
 
 // Supprimer un utilisateur
-export async function DELETE(request: NextRequest, context: { params: { id?: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
-    const { params } = context;
-    if (!params?.id) {
-      return NextResponse.json({ error: "Paramètre 'id' manquant dans l'URL." }, { status: 400 });
-    }
     // Vérifier si l'utilisateur existe
     const user = await prisma.user.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
     if (!user) {
       return NextResponse.json(
@@ -89,7 +85,7 @@ export async function DELETE(request: NextRequest, context: { params: { id?: str
     }
     // Supprimer l'utilisateur et toutes ses données associées
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id }
     });
     return NextResponse.json({ message: 'Utilisateur supprimé avec succès' });
   } catch (error) {

@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 
-export default async function EditHomeSectionPage({ params }: { params: { id: string } }) {
+export default async function EditHomeSectionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const section = await prisma.homeSection.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       products: { include: { product: true }, orderBy: { order: "asc" } }
     }
@@ -26,7 +27,7 @@ export default async function EditHomeSectionPage({ params }: { params: { id: st
 
     // Mettre à jour la section et ses produits (remplacement complet)
     await prisma.homeSection.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         order,

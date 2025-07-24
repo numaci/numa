@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // POST: Ajouter un produit à une section
-export async function POST(req: NextRequest, { params }: { params: { id: string, sectionId: string } }) {
-  const sectionId = params.sectionId;
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string, sectionId: string }> }) {
+  const { sectionId } = await context.params;
   const { productId } = await req.json();
   if (!productId) {
     return NextResponse.json({ error: "productId requis" }, { status: 400 });

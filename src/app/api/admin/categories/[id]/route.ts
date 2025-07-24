@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/admin/categories/[id] - Récupérer une catégorie spécifique
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -40,13 +38,9 @@ export async function GET(
 }
 
 // PUT /api/admin/categories/[id] - Modifier une catégorie
-export async function PUT(
-  request: NextRequest,
-  ctx: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
-    const { params } = ctx;
-    const id = (await params).id;
     const body = await request.json();
     const { name, slug, description, imageUrl, isActive, isPublic } = body;
 
@@ -114,11 +108,10 @@ export async function PUT(
 // DELETE /api/admin/categories/[id] - Supprimer une catégorie
 export async function DELETE(
   request: NextRequest,
-  ctx: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
-    const { params } = ctx;
-    const id = (await params).id;
     // Vérifier si la catégorie existe et compter ses produits
     const category = await prisma.category.findUnique({
       where: { id },

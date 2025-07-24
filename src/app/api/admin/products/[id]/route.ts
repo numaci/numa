@@ -4,10 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/admin/products/[id] - Récupère un produit spécifique
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     // Vérification de l'authentification et des permissions admin
     const session = await getServerSession(authOptions);
@@ -17,8 +15,6 @@ export async function GET(
         { status: 401 }
       );
     }
-
-    const { id } = params;
 
     // Récupération du produit avec sa catégorie ET ses variantes
     const product = await prisma.product.findUnique({
@@ -63,10 +59,8 @@ export async function GET(
 }
 
 // PUT /api/admin/products/[id] - Modifie un produit existant
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     // Vérification de l'authentification et des permissions admin
     const session = await getServerSession(authOptions);
@@ -76,8 +70,6 @@ export async function PUT(
         { status: 401 }
       );
     }
-
-    const { id } = params;
 
     // Vérification que le produit existe
     const existingProduct = await prisma.product.findUnique({
@@ -135,107 +127,36 @@ export async function PUT(
       );
     }
 
-    // Vérification que le slug est unique (sauf pour ce produit)
-    const slugConflict = await prisma.product.findFirst({
-      where: {
-        slug,
-        id: { not: id },
-      },
-    });
-
-    if (slugConflict) {
-      return NextResponse.json(
-        { error: "Un produit avec ce slug existe déjà" },
-        { status: 400 }
-      );
-    }
-
-    // Vérification que le SKU est unique (si fourni, sauf pour ce produit)
-    if (sku) {
-      const skuConflict = await prisma.product.findFirst({
-        where: {
-          sku,
-          id: { not: id },
-        },
-      });
-
-      if (skuConflict) {
-        return NextResponse.json(
-          { error: "Un produit avec ce SKU existe déjà" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Vérification que la catégorie existe
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
-    });
-
-    if (!category) {
-      return NextResponse.json(
-        { error: "La catégorie sélectionnée n'existe pas" },
-        { status: 400 }
-      );
-    }
-
-    // Mise à jour du produit
-    console.log("Images reçues dans le body (PUT):", images);
+    // Mettre à jour le produit
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
         name,
         slug,
         description,
-        price: price.toString(),
-        comparePrice: comparePrice ? comparePrice.toString() : null,
-        stock: parseInt(stock),
-        sku: sku || null,
-        weight: weight ? parseFloat(weight) : null,
-        dimensions: dimensions || null,
+        price,
+        comparePrice,
+        stock,
+        sku,
+        weight,
+        dimensions,
         categoryId,
-        isActive: Boolean(isActive),
-        isFeatured: Boolean(isFeatured),
-        isBest: Boolean(isBest),
-        imageUrl: imageUrl || null,
-        images: Array.isArray(images) && images.length > 0 ? JSON.stringify(images) : '[]',
-        shippingPrice: shippingPrice !== undefined && shippingPrice !== null && shippingPrice !== '' ? shippingPrice : null,
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        isActive,
+        isFeatured,
+        imageUrl,
+        images,
+        variants,
+        shippingPrice,
+        isBest,
       },
     });
-
-    // Gestion des variantes : suppression puis ajout (remplacement complet)
-    if (variants && Array.isArray(variants)) {
-      // Supprimer les anciennes variantes
-      await prisma.productVariant.deleteMany({ where: { productId: id } });
-      // Ajouter les nouvelles variantes
-      const variantsToCreate = variants
-        .filter(v => v.name && v.value && v.price)
-        .map(v => ({
-          productId: id,
-          name: v.name,
-          value: v.value,
-          price: v.price,
-        }));
-      if (variantsToCreate.length > 0) {
-        await prisma.productVariant.createMany({ data: variantsToCreate });
-      }
-    }
 
     return NextResponse.json({
-      message: "Produit modifié avec succès",
+      message: "Produit mis à jour avec succès",
       product: updatedProduct,
     });
-
   } catch (error) {
-    console.error("Erreur lors de la modification du produit:", error);
+    console.error("Erreur lors de la mise à jour du produit:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
       { status: 500 }
@@ -244,10 +165,8 @@ export async function PUT(
 }
 
 // DELETE /api/admin/products/[id] - Supprime un produit
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     // Vérification de l'authentification et des permissions admin
     const session = await getServerSession(authOptions);
@@ -257,8 +176,6 @@ export async function DELETE(
         { status: 401 }
       );
     }
-
-    const { id } = params;
 
     // Vérification que le produit existe
     const existingProduct = await prisma.product.findUnique({

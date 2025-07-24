@@ -2,13 +2,13 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 // GET: Détail d'un fournisseur
-export async function GET(req: Request, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
-  if (!params?.id) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  if (!id) {
     return new Response(JSON.stringify({ error: "Missing supplier id" }), { status: 400 });
   }
   const supplier = await prisma.supplier.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       products: true,
       // payments: true, // supprimé car n'existe pas
@@ -23,13 +23,13 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 // PUT: Modifier un fournisseur
 export async function PUT(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = await Promise.resolve(context);
+  const { id } = await context.params;
   const data = await req.json();
   const { name, email, phone, address } = data;
   const supplier = await prisma.supplier.update({
-    where: { id: params.id },
+    where: { id },
     data: { name, email, phone, address },
   });
   return NextResponse.json(supplier);
@@ -38,9 +38,9 @@ export async function PUT(
 // DELETE: Supprimer un fournisseur
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = await Promise.resolve(context);
-  await prisma.supplier.delete({ where: { id: params.id } });
+  const { id } = await context.params;
+  await prisma.supplier.delete({ where: { id } });
   return NextResponse.json({ success: true });
 } 

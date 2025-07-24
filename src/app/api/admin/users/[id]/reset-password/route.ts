@@ -4,9 +4,9 @@ import bcrypt from "bcryptjs";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await context.params;
   if (!id) {
     return NextResponse.json({ error: "ID manquant" }, { status: 400 });
   }

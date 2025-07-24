@@ -3,12 +3,12 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Accès non autorisé' }, { status: 401 });
   }
-  const { id } = params;
   const { comment } = await req.json();
   if (!comment || !comment.trim()) {
     return NextResponse.json({ error: 'Commentaire obligatoire' }, { status: 400 });

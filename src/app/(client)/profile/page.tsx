@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { FaUser, FaEnvelope, FaCalendar, FaSignOutAlt, FaEdit, FaShoppingBag, FaHeart, FaCog, FaKey, FaCheckCircle } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaCalendar, FaSignOutAlt, FaEdit, FaCog } from "react-icons/fa";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -20,14 +20,14 @@ export default function ProfilePage() {
   } : undefined;
 
   // Ajout pour gestion fournisseur
-  const [supplier, setSupplier] = useState<any>(null);
+  const [supplier, setSupplier] = useState<unknown>(null);
   const [supplierLoading, setSupplierLoading] = useState(false);
-  const [supplierError, setSupplierError] = useState("");
+  const [supplierError, setSupplierError] = useState<string>("");
 
   // Ajout pour gestion utilisateur custom
-  const [customUser, setCustomUser] = useState<any>(null);
+  const [customUser, setCustomUser] = useState<unknown>(null);
   const [customUserLoading, setCustomUserLoading] = useState(false);
-  const [customUserError, setCustomUserError] = useState("");
+  const [customUserError, setCustomUserError] = useState<string>("");
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -42,19 +42,6 @@ export default function ProfilePage() {
   const [editError, setEditError] = useState("");
   const [editSuccess, setEditSuccess] = useState("");
   const [editLoading, setEditLoading] = useState(false);
-
-  const [showPwdForm, setShowPwdForm] = useState(false);
-  const [pwdForm, setPwdForm] = useState({
-    current: "",
-    newPwd: "",
-    confirm: ""
-  });
-  const [pwdError, setPwdError] = useState("");
-  const [pwdSuccess, setPwdSuccess] = useState("");
-  const [pwdLoading, setPwdLoading] = useState(false);
-
-  // Ajout pour notification de confirmation
-  const [showPwdSuccessToast, setShowPwdSuccessToast] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
