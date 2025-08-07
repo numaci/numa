@@ -2,121 +2,111 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from 'next/link';
 
+// This interface now matches the simplified Ad model from Prisma
 interface Ad {
-  id: string | number;
-  imageUrl: string;
-  title?: string;
-  description?: string;
-  link?: string;
-  buttonText?: string;
-  bgColor?: string;
-  productId?: string;
-  productSlug?: string;
-  categoryId?: string;
-  categorySlug?: string;
+  id: string;
+  imageUrl: string | null;
+  link?: string | null;
 }
 
 interface AdBannerCarouselProps {
   ads: Ad[];
 }
 
-const AUTO_SCROLL_INTERVAL = 5000; // 5s
+const AUTO_SCROLL_INTERVAL = 5000; // 5 seconds
+
+// A helper component to render a link only if href is provided
+const ConditionalLink = ({ href, children, className }: { href?: string, children: React.ReactNode, className?: string }) => {
+  if (href) {
+    const isExternal = href.startsWith('http');
+    if (isExternal) {
+      return <a href={href} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
+    }
+    return <Link href={href} className={className}>{children}</Link>;
+  }
+  return <div className={className}>{children}</div>;
+};
 
 const AdBannerCarousel: React.FC<AdBannerCarouselProps> = ({ ads }) => {
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const visibleAds = ads.slice(0, 4);
-  const [imgError, setImgError] = useState<{[key:string]:boolean}>({});
+  
+  // Filter out ads without a valid image URL right away
+  const visibleAds = ads.filter(ad => ad.imageUrl);
 
   useEffect(() => {
     if (visibleAds.length <= 1) return;
-    timeoutRef.current = setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % visibleAds.length);
-    }, AUTO_SCROLL_INTERVAL);
+
+    const nextSlide = () => {
+      setCurrent((prev) => (prev === visibleAds.length - 1 ? 0 : prev + 1));
+    };
+
+    timeoutRef.current = setTimeout(nextSlide, AUTO_SCROLL_INTERVAL);
+
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [current, visibleAds.length]);
 
-  const goTo = (idx: number) => {
-    setCurrent(idx);
+  const goToSlide = (slideIndex: number) => {
+    setCurrent(slideIndex);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  const prev = () => goTo((current - 1 + visibleAds.length) % visibleAds.length);
-  const next = () => goTo((current + 1) % visibleAds.length);
+  const prevSlide = () => {
+    const newIndex = current === 0 ? visibleAds.length - 1 : current - 1;
+    goToSlide(newIndex);
+  };
 
-  if (visibleAds.length === 0) return null;
+  const nextSlide = () => {
+    const newIndex = current === visibleAds.length - 1 ? 0 : current + 1;
+    goToSlide(newIndex);
+  };
+
+  if (visibleAds.length === 0) {
+    return null; // Don't render anything if there are no ads with images
+  }
 
   return (
-    <div
-      className="relative w-full max-w-6xl mx-auto mb-8 rounded-lg overflow-hidden shadow-lg"
-      style={{ minHeight: 240, height: 'clamp(240px, 38vw, 400px)', background: visibleAds[current].bgColor || '#f5f5f5' }}
-    >
-      {visibleAds.map((ad, idx) => (
+    <div className="relative w-full max-w-6xl mx-auto mb-8 rounded-lg overflow-hidden shadow-lg bg-gray-100" style={{ height: 'clamp(240px, 38vw, 400px)' }}>
+      <div className="w-full h-full overflow-hidden">
         <div
-          key={ad.id}
-          className={`absolute inset-0 transition-opacity duration-700 flex ${idx === current ? "opacity-100 z-10" : "opacity-0 z-0"}`}
-          style={{ background: ad.bgColor || "#f5f5f5", width: '100%', height: '100%' }}
+          className="flex transition-transform ease-out duration-500 h-full"
+          style={{ transform: `translateX(-${current * 100}%)` }}
         >
-          <div className="w-full h-full flex items-center justify-center">
-            {(() => {
-              // Détermine le lien de redirection
-              let href: string | undefined;
-              if (ad.productId && ad.productSlug) {
-                href = `/products/${ad.productSlug}`;
-              } else if (ad.categoryId && ad.categorySlug) {
-                href = `/products/category/${ad.categorySlug}`;
-              } else if (ad.link) {
-                href = ad.link;
-              }
-              const content = ad.imageUrl && !imgError[ad.id] ? (
+          {visibleAds.map((ad) => (
+            <div key={ad.id} className="w-full h-full flex-shrink-0 relative">
+              <ConditionalLink href={ad.link || undefined} className="block w-full h-full">
                 <Image
-                  src={ad.imageUrl}
-                  alt={ad.title || "Publicité"}
+                  src={ad.imageUrl!} // We've filtered out nulls, so we can assert it's a string
+                  alt="Publicité"
                   fill
-                  className="object-contain w-full h-full cursor-pointer"
-                  priority={idx === current}
-                  onError={() => setImgError(e => ({ ...e, [ad.id]: true }))}
+                  className="object-contain"
+                  priority={visibleAds.indexOf(ad) === 0} // Priority load for the first image
                 />
-              ) : (
-                <div className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-                  <span className="text-6xl mb-2">🚚</span>
-                </div>
-              );
-              return href ? (
-                <a href={href} target={ad.link && ad.link.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="w-full h-full block">
-                  {content}
-                </a>
-              ) : content;
-            })()}
-          </div>
+              </ConditionalLink>
+            </div>
+          ))}
         </div>
-      ))}
-      {/* Contrôles */}
+      </div>
+
       {visibleAds.length > 1 && (
         <>
-          <button
-            onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/70 z-20"
-            aria-label="Précédent"
-          >
+          <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/70 z-20" aria-label="Précédent">
             &#8592;
           </button>
-          <button
-            onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/70 z-20"
-            aria-label="Suivant"
-          >
+          <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/70 z-20" aria-label="Suivant">
             &#8594;
           </button>
-          {/* Indicateurs */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
             {visibleAds.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => goTo(idx)}
+                onClick={() => goToSlide(idx)}
                 className={`w-3 h-3 rounded-full border border-white ${idx === current ? "bg-amber-500" : "bg-white/60"}`}
                 aria-label={`Aller à la pub ${idx + 1}`}
               />
@@ -128,4 +118,4 @@ const AdBannerCarousel: React.FC<AdBannerCarouselProps> = ({ ads }) => {
   );
 };
 
-export default AdBannerCarousel; 
+export default AdBannerCarousel;

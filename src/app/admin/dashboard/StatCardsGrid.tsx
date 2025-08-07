@@ -18,39 +18,49 @@ interface StatCardsGridProps {
   };
 }
 
-const cardStyles = "bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 flex flex-col justify-between min-w-[260px] transition-transform hover:scale-[1.03] hover:shadow-2xl border border-orange-100";
-
 // Objet contenant les icônes SVG pour chaque type de statistique
-// Utilise des icônes personnalisées avec des couleurs spécifiques
+// Utilise des icônes avec la palette NUMA
 const icons = {
-  clients: <FiUsers size={32} className="text-amber-500" />,
-  orders: <FiShoppingCart size={32} className="text-orange-500" />,
-  earnings: <FiDollarSign size={32} className="text-green-500" />,
-  balance: <FiBarChart2 size={32} className="text-cyan-500" />,
+  clients: <FiUsers size={32} className="text-gray-700" />,
+  orders: <FiShoppingCart size={32} className="text-gray-700" />,
+  earnings: <FiDollarSign size={32} className="text-gray-700" />,
+  balance: <FiBarChart2 size={32} className="text-white" />,
 };
 
 // Composant Card réutilisable pour afficher une statistique
 // Affiche un titre, une valeur principale et deux valeurs secondaires (gauche/droite)
 const Card = ({ title, value, leftLabel, leftValue, rightLabel, rightValue, icon, accent }: any) => (
-  <div className={cardStyles + (accent ? " bg-gradient-to-br from-amber-600 via-orange-400 to-amber-700 text-white" : "") }>
+  <div className={`admin-card ${accent ? "bg-black text-white" : ""}`}>
     <div className="flex justify-between items-start">
       <div>
-        <div className={accent ? "uppercase text-xs text-amber-200 font-semibold tracking-wider mb-1" : "uppercase text-xs text-orange-500 font-semibold tracking-wider mb-1"}>{title}</div>
-        <div className={accent ? "text-3xl font-bold text-white" : "text-2xl font-bold text-amber-700"}>{value}</div>
+        <div className={`uppercase text-xs font-semibold tracking-wider mb-2 antialiased ${
+          accent ? "text-gray-300" : "text-gray-600"
+        }`}>
+          {title}
+        </div>
+        <div className={`text-3xl font-semibold tracking-tight antialiased ${
+          accent ? "text-white" : "text-black"
+        }`}>
+          {value}
+        </div>
       </div>
-      <div className={accent ? "flex items-center justify-center h-12 w-12 rounded-full bg-white/20" : "flex items-center justify-center h-12 w-12 rounded-full bg-orange-50"}>
+      <div className={`flex items-center justify-center h-12 w-12 rounded-xl ${
+        accent ? "bg-white bg-opacity-20" : "bg-gray-100"
+      }`}>
         {icon}
       </div>
     </div>
     {(leftLabel || rightLabel) && (
-      <div className={accent ? "flex justify-between items-center border-t border-amber-200 mt-4 pt-3 text-xs text-amber-100" : "flex justify-between items-center border-t mt-4 pt-3 text-xs text-orange-500"}>
+      <div className={`flex justify-between items-center border-t mt-4 pt-4 text-xs ${
+        accent ? "border-gray-600 text-gray-300" : "border-gray-200 text-gray-600"
+      }`}>
         <div>
-          {leftLabel && <span className="block uppercase text-[10px] font-bold">{leftLabel}</span>}
-          {leftValue && <span className="font-bold text-base">{leftValue}</span>}
+          {leftLabel && <span className="block uppercase text-[10px] font-bold antialiased">{leftLabel}</span>}
+          {leftValue && <span className="font-semibold text-base antialiased">{leftValue}</span>}
         </div>
         <div className="text-right">
-          {rightLabel && <span className="block uppercase text-[10px] font-bold">{rightLabel}</span>}
-          {rightValue && <span className="font-bold text-base">{rightValue}</span>}
+          {rightLabel && <span className="block uppercase text-[10px] font-bold antialiased">{rightLabel}</span>}
+          {rightValue && <span className="font-semibold text-base antialiased">{rightValue}</span>}
         </div>
       </div>
     )}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -8,11 +8,11 @@ export async function GET(request: NextRequest) {
   try {
     // Vérification de l'authentification et des permissions admin
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Accès non autorisé" },
-        { status: 401 }
-      );
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 401 });
+    }
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 401 });
     }
 
     // Récupération des paramètres de requête
@@ -120,11 +120,11 @@ export async function POST(request: NextRequest) {
   try {
     // Vérification de l'authentification et des permissions admin
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Accès non autorisé" },
-        { status: 401 }
-      );
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 401 });
+    }
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 401 });
     }
 
     // Récupération des données du produit
@@ -146,25 +146,30 @@ export async function POST(request: NextRequest) {
       images,
       attributes,
       isBest,
-      supplierId,
-      supplierPrice,
     } = body;
 
     // Validation des données requises
-    
-    if (!name || !slug || !description || !price || !categoryId || supplierPrice === undefined || supplierPrice === "") {
+    if (!name || !slug || !description || !price || !categoryId || stock === undefined || stock === '') {
       return NextResponse.json(
-        { error: "Tous les champs obligatoires doivent être remplis (y compris le prix fournisseur)" },
+        { error: "Tous les champs obligatoires doivent être remplis, y compris le stock." },
+        { status: 400 }
+      );
+    }
+
+    const stockInt = parseInt(stock as string, 10);
+    if (isNaN(stockInt)) {
+      return NextResponse.json(
+        { error: 'La quantité en stock doit être un nombre valide.' },
         { status: 400 }
       );
     }
 
     // Vérification que le slug est unique
-    const existingProduct = await prisma.product.findUnique({
+    const existingProductBySlug = await prisma.product.findUnique({
       where: { slug },
     });
 
-    if (existingProduct) {
+    if (existingProductBySlug) {
       return NextResponse.json(
         { error: "Un produit avec ce slug existe déjà" },
         { status: 400 }
@@ -173,11 +178,11 @@ export async function POST(request: NextRequest) {
 
     // Vérification que le SKU est unique (si fourni)
     if (sku) {
-      const existingSku = await prisma.product.findUnique({
+      const existingProductBySku = await prisma.product.findUnique({
         where: { sku },
       });
 
-      if (existingSku) {
+      if (existingProductBySku) {
         return NextResponse.json(
           { error: "Un produit avec ce SKU existe déjà" },
           { status: 400 }
@@ -186,11 +191,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérification que la catégorie existe
-    const category = await prisma.category.findUnique({
+    const categoryExists = await prisma.category.findUnique({
       where: { id: categoryId },
     });
 
-    if (!category) {
+    if (!categoryExists) {
       return NextResponse.json(
         { error: "La catégorie sélectionnée n'existe pas" },
         { status: 400 }
@@ -203,9 +208,9 @@ export async function POST(request: NextRequest) {
         name,
         slug,
         description,
-        price: price.toString(),
-        comparePrice: comparePrice ? comparePrice.toString() : null,
-        stock: parseInt(stock),
+        price: Number(price),
+        comparePrice: comparePrice ? Number(comparePrice) : null,
+        stock: stockInt,
         sku: sku || null,
         weight: weight ? parseFloat(weight) : null,
         dimensions: dimensions || null,
@@ -217,8 +222,6 @@ export async function POST(request: NextRequest) {
         images: Array.isArray(images) && images.length > 0 ? JSON.stringify(images) : '[]',
         attributes: attributes || null,
         status: 'PUBLISHED',
-        supplierId: supplierId || null,
-        supplierPrice: Number(supplierPrice),
       },
       include: {
         category: {
@@ -232,13 +235,20 @@ export async function POST(request: NextRequest) {
 
     // Ajout des variantes si fournies
     if (body.variants && Array.isArray(body.variants)) {
+      interface VariantData {
+        name: string;
+        value: string;
+        price: string | number;
+        stock?: string | number;
+      }
       const variantsToCreate = body.variants
-        .filter(v => v.name && v.value && v.price)
-        .map(v => ({
+        .filter((v: VariantData) => v.name && v.value && v.price !== undefined)
+        .map((v: VariantData) => ({
           productId: product.id,
           name: v.name,
           value: v.value,
-          price: v.price,
+          price: parseFloat(v.price.toString()),
+          stock: parseInt(v.stock?.toString() || '0'),
         }));
       if (variantsToCreate.length > 0) {
         await prisma.productVariant.createMany({ data: variantsToCreate });
@@ -254,9 +264,11 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue est survenue";
+    console.error("Erreur détaillée lors de la création du produit:", error);
     return NextResponse.json(
-      { error: "Erreur lors de la création du produit" },
+      { error: `Erreur serveur lors de la création du produit: ${errorMessage}` },
       { status: 500 }
     );
   }
-} 
+}

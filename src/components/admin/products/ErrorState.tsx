@@ -33,17 +33,17 @@ export default function ErrorState({
       </div>
 
       {/* Message d'erreur */}
-      <p className="text-red-600 mb-4">{error}</p>
+      <p className="text-red-600 mb-4 antialiased">{error}</p>
 
       {/* Bouton de retry */}
       {onRetry && (
         <button
           onClick={onRetry}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="admin-button admin-button-primary"
         >
           {retryText}
         </button>
       )}
     </div>
   );
-} 
+}

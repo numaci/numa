@@ -22,7 +22,7 @@ export interface ProductFormData {
   imagePublicId: string;
   images?: string;
   attributes?: unknown;
-  supplierId?: string;
+
 }
 
 // Hook personnalisé pour gérer le formulaire de produit
@@ -48,7 +48,7 @@ export function useProductForm() {
     imagePublicId: "",
     images: "",
     attributes: undefined,
-    supplierId: "",
+
   };
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
 

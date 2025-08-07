@@ -1,5 +1,5 @@
 import ClientLayout from "@/components/layout/ClientLayout";
-import WhatsappCollectForm from './WhatsappCollectForm';
+
 import ClientTransitionWrapper from "@/components/layout/ClientTransitionWrapper";
 
 import type { ReactNode } from "react";
@@ -11,7 +11,7 @@ import WhatsappButtonDynamic from "@/components/layout/WhatsappButtonDynamic";
 export default function ClientRootLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <WhatsappCollectForm />
+
       <WhatsappButtonDynamic />
       <CartDrawerProvider>
         <ClientTransitionWrapper>

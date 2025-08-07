@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import { useRouter } from "next/navigation";
+import { toast } from 'react-hot-toast';
 
 // Types pour les catégories
 export interface Category {
@@ -25,8 +25,6 @@ interface CategoryFilters {
 
 // Hook personnalisé pour gérer les catégories
 export function useCategories() {
-  // const router = useRouter();
-  
   // États pour la gestion des données
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +36,12 @@ export function useCategories() {
     status: "all",
   });
 
-  // Chargement des catégories
+  // États pour la suppression
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Chargement initial des catégories
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -48,7 +51,6 @@ export function useCategories() {
     try {
       setLoading(true);
       setError(null);
-      
       const response = await fetch("/api/admin/categories");
       if (response.ok) {
         const data = await response.json();
@@ -58,7 +60,7 @@ export function useCategories() {
         setError(errorData.error || "Erreur lors du chargement des catégories");
       }
     } catch {
-      setError("Erreur de connexion");
+      setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
@@ -71,13 +73,45 @@ export function useCategories() {
 
   // Réinitialisation des filtres
   const resetFilters = () => {
-    setFilters({
-      search: "",
-      status: "all",
-    });
+    setFilters({ search: "", status: "all" });
   };
 
-  // Filtrage des catégories
+  // Logique de suppression
+  const openDeleteModal = (category: Category) => {
+    setCategoryToDelete(category);
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setCategoryToDelete(null);
+    setDeleteModalOpen(false);
+  };
+
+  const confirmDelete = async () => {
+    if (!categoryToDelete) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('Catégorie supprimée avec succès');
+        setCategories(prev => prev.filter(c => c.id !== categoryToDelete.id));
+        closeDeleteModal();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Erreur lors de la suppression');
+      }
+    } catch (err) {
+      toast.error('Erreur de connexion lors de la suppression.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Filtrage des catégories pour l'affichage
   const filteredCategories = categories.filter(category => {
     const matchesSearch = category.name.toLowerCase().includes(filters.search.toLowerCase()) ||
                          category.slug.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -103,7 +137,6 @@ export function useCategories() {
 
       if (response.ok) {
         const data = await response.json();
-        // Ajouter la nouvelle catégorie à la liste
         setCategories(prev => [data.category, ...prev]);
         return { success: true, category: data.category };
       } else {
@@ -128,7 +161,6 @@ export function useCategories() {
 
       if (response.ok) {
         const data = await response.json();
-        // Mettre à jour la catégorie dans la liste
         setCategories(prev => prev.map(cat => 
           cat.id === id ? { ...cat, ...data.category } : cat
         ));
@@ -148,6 +180,9 @@ export function useCategories() {
     loading,
     error,
     filters,
+    deleteModalOpen,
+    categoryToDelete,
+    deleting,
     
     // Actions
     fetchCategories,
@@ -155,5 +190,8 @@ export function useCategories() {
     resetFilters,
     createCategory,
     updateCategory,
+    openDeleteModal,
+    closeDeleteModal,
+    confirmDelete,
   };
 } 

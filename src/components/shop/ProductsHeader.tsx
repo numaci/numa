@@ -1,13 +1,13 @@
 // En-tête de la page catalogue des produits
 export default function ProductsHeader() {
   return (
-    <div className="mb-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        Catalogue de produits
+    <div className="mb-10 pb-6 border-b border-gray-100">
+      <h1 className="text-2xl font-light text-gray-800 mb-3">
+        Sélection NUMA
       </h1>
-      <p className="text-gray-600">
-        Découvrez notre sélection de produits de qualité
+      <p className="text-gray-500 text-sm">
+        Luxe, sobriété et confort supérieur
       </p>
     </div>
   );
-} 
+}

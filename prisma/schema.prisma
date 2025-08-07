@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = "mysql://root:bour@localhost:3306/ecommerce"
 }
 
 model User {
@@ -50,18 +50,15 @@ model Product {
   attributes    Json?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
-  supplierPrice Decimal          @db.Decimal(10, 2)
-  supplierId    String?
   status        ProductStatus    @default(PENDING)
   refuseComment String?
   shippingPrice Decimal?         @db.Decimal(10, 2)
-  ads           Ad[]
+
   variants      ProductVariant[]
   sections      SectionProduct[]
   cartItems     CartItem[]
   orderItems    OrderItem[]
   category      Category         @relation(fields: [categoryId], references: [id])
-  supplier      Supplier?        @relation(fields: [supplierId], references: [id])
   reviews       Review[]
 
   @@map("products")
@@ -73,7 +70,10 @@ model ProductVariant {
   name      String
   value     String
   price     Decimal @db.Decimal(10, 2)
-  product   Product @relation(fields: [productId], references: [id])
+  stock     Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variants")
 }
 
 model Category {
@@ -87,7 +87,7 @@ model Category {
   parentId     String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  ads          Ad[]          @relation("CategoryAds")
+
   homeSections HomeSection[]
   parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children     Category[]    @relation("CategoryHierarchy")
@@ -117,13 +117,13 @@ model Order {
 model OrderItem {
   id        String  @id @default(cuid())
   orderId   String
-  productId String
+  productId String?
   quantity  Int
   price     Decimal @db.Decimal(10, 2)
   name      String
   sku       String?
   order     Order   @relation(fields: [orderId], references: [id])
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@map("order_items")
 }
@@ -181,34 +181,15 @@ model Review {
 }
 
 model Ad {
-  id          String    @id @default(cuid())
-  title       String
-  description String
-  buttonText  String
-  imageUrl    String?
-  link        String?
-  bgColor     String?
-  order       Int       @default(0)
-  isActive    Boolean   @default(true)
-  productId   String?
-  categoryId  String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  category    Category? @relation("CategoryAds", fields: [categoryId], references: [id])
-  product     Product?  @relation(fields: [productId], references: [id])
+  id        String   @id @default(cuid())
+  imageUrl  String
+  link      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Supplier {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  password  String
-  phone     String?
-  address   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
-}
+
 
 model WhatsappConfig {
   id             String   @id @default(cuid())

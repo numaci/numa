@@ -32,6 +32,87 @@ body {
   @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
 }
 
+/* Styles Admin - Palette NUMA (noir/blanc/gris) */
+.admin-layout {
+  @apply bg-white min-h-screen;
+}
+
+.admin-sidebar {
+  @apply fixed left-0 top-0 bottom-0 z-30 bg-white text-black w-64 h-screen border-r border-gray-300 transition-all duration-300 ease-in-out hidden md:flex flex-col shadow-lg;
+}
+
+.admin-sidebar-collapsed {
+  @apply w-16;
+}
+
+.admin-sidebar-header {
+  @apply p-6 border-b border-gray-300;
+}
+
+.admin-sidebar-link {
+  @apply flex items-center px-4 py-3 my-1 mx-2 rounded-xl transition-all duration-300 ease-in-out font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 antialiased;
+}
+
+.admin-sidebar-link-active {
+  @apply bg-black text-white font-semibold shadow-md;
+}
+
+.admin-sidebar-link-inactive {
+  @apply text-gray-700 hover:bg-gray-100 hover:text-black hover:scale-105;
+}
+
+.admin-header {
+  @apply bg-white text-black shadow-lg border-b border-gray-200;
+}
+
+.admin-card {
+  @apply bg-white rounded-xl shadow-md p-6 flex flex-col justify-between min-w-[260px] transition-transform hover:scale-[1.03] hover:shadow-lg border border-gray-300;
+}
+
+.admin-table {
+  @apply bg-white rounded-xl shadow-md border border-gray-300 overflow-visible z-0;
+}
+
+.admin-table-header {
+  @apply flex items-center gap-2 px-6 py-4 border-b border-gray-300 bg-white rounded-t-xl;
+}
+
+.admin-table-th {
+  @apply px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap;
+}
+
+.admin-table-td {
+  @apply px-4 md:px-6 py-4 whitespace-nowrap;
+}
+
+.admin-table-row {
+  @apply hover:bg-gray-50 transition;
+}
+
+.admin-status-badge {
+  @apply inline-flex px-3 py-1 text-xs font-bold rounded-full shadow;
+}
+
+.admin-button {
+  @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300 ease-in-out antialiased tracking-tight;
+}
+
+.admin-button-primary {
+  @apply bg-black hover:bg-gray-800 text-white hover:scale-105 shadow-md hover:shadow-lg;
+}
+
+.admin-button-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 hover:scale-105 shadow-sm hover:shadow-md;
+}
+
+.admin-button-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white hover:scale-105 shadow-md hover:shadow-lg;
+}
+
+.admin-input {
+  @apply w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 ease-in-out antialiased bg-gray-50 hover:bg-white;
+}
+
 /* Animations */
 .animate-slide-in-right {
   animation: slideInRight 0.3s ease-out;

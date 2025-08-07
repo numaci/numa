@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
     setError("");
     try {
       const result = await signIn("credentials", {
-        email,
+        emailOrPhone: email,
         password,
         redirect: false,
       });
@@ -45,12 +45,17 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-600 via-orange-400 to-amber-200 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white/95 rounded-2xl shadow-2xl p-8 border border-orange-100">
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
         {/* En-tête de la page */}
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-extrabold text-orange-700 drop-shadow">Connexion Administration</h2>
-          <p className="mt-2 text-sm text-orange-400">Accédez à votre tableau de bord d'administration</p>
+          <div className="mx-auto w-16 h-16 bg-black rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-semibold text-black tracking-tight antialiased">Administration</h2>
+          <p className="mt-2 text-base text-gray-600 antialiased">Accédez à votre tableau de bord</p>
         </div>
 
         {/* Formulaire de connexion */}
@@ -67,7 +72,7 @@ export default function AdminLoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-t-lg relative block w-full px-4 py-3 border border-orange-200 placeholder-orange-300 text-orange-900 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent focus:z-10 sm:text-sm bg-white"
+                className="admin-input rounded-t-xl rounded-b-none border-b-0 placeholder-gray-500 text-black antialiased"
                 placeholder="Adresse email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -86,7 +91,7 @@ export default function AdminLoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-b-lg relative block w-full px-4 py-3 border border-orange-200 placeholder-orange-300 text-orange-900 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent focus:z-10 sm:text-sm bg-white"
+                className="admin-input rounded-b-xl rounded-t-none placeholder-gray-500 text-black antialiased"
                 placeholder="Mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -107,7 +112,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 disabled:opacity-50 disabled:cursor-not-allowed shadow"
+              className="admin-button admin-button-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Connexion en cours..." : "Se connecter"}
             </button>
@@ -117,7 +122,7 @@ export default function AdminLoginPage() {
           <div className="text-center mt-4">
             <Link
               href="/"
-              className="font-medium text-orange-500 hover:text-orange-700"
+              className="font-medium text-gray-600 hover:text-black transition-colors duration-300 ease-in-out antialiased"
             >
               Retour à l'accueil
             </Link>

@@ -66,12 +66,15 @@ function transformProduct(product: unknown): Product {
     isBest: p.isBest,
     isHealth: p.isHealth,
     categoryId: p.categoryId,
-    createdAt: typeof p.createdAt === 'string' ? p.createdAt : p.createdAt?.toString() ?? '',
-    updatedAt: typeof p.updatedAt === 'string' ? p.updatedAt : p.updatedAt?.toString() ?? '',
+    createdAt: new Date(p.createdAt).toISOString(),
+    updatedAt: new Date(p.updatedAt).toISOString(),
     status: p.status,
     refuseComment: p.refuseComment,
     variants: Array.isArray(p.variants)
-      ? p.variants.map((v: any) => ({ ...v, price: typeof v.price === 'number' ? v.price : Number(v.price) }))
+      ? p.variants.map((v: any) => ({
+          ...v,
+          price: typeof v.price === 'number' ? v.price : Number(v.price),
+        }))
       : [],
   };
 }
@@ -110,8 +113,8 @@ async function getProducts(searchParams: Promise<SearchParams>) {
   // Filtre par recherche
   if (params.search) {
     where.OR = [
-      { name: { contains: params.search, mode: "insensitive" } },
-      { description: { contains: params.search, mode: "insensitive" } },
+      { name: { contains: params.search } },
+      { description: { contains: params.search } },
     ];
   }
 
@@ -180,7 +183,7 @@ async function getProducts(searchParams: Promise<SearchParams>) {
       currentPage: page,
     };
   } catch (error) {
-    // console.error("Erreur lors de la récupération des produits:", error);
+    console.error("Erreur détaillée lors de la récupération des produits:", error);
     throw new Error("Impossible de récupérer les produits");
   }
 }
@@ -191,46 +194,21 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  // Récupération des pubs actives, triées par ordre
+  // Récupération des pubs actives, triées par date
   const ads = await prisma.ad.findMany({
     where: { isActive: true },
-    orderBy: { order: "asc" },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      buttonText: true,
-      imageUrl: true,
-      link: true,
-      bgColor: true,
-      productId: true,
-      product: { select: { slug: true } },
-      categoryId: true,
-      category: { select: { slug: true } },
-    },
+    orderBy: { createdAt: "desc" },
   });
 
-  // Ajoute les slugs pour le carousel
-  const adsWithSlugs = ads.map(ad => ({
-    ...ad,
-    productSlug: ad.product?.slug || undefined,
-    categorySlug: ad.category?.slug || undefined,
-    imageUrl: ad.imageUrl || "",
-    link: ad.link ?? undefined, // Corrige le typage : null => undefined
-    bgColor: ad.bgColor ?? undefined, // Corrige le typage : null => undefined
-    productId: ad.productId ?? undefined, // Corrige le typage : null => undefined
-    categoryId: ad.categoryId ?? undefined, // Corrige le typage : null => undefined
-  }));
-
-  // Filtrer les pubs avec image
-  const adsWithImage = adsWithSlugs.filter(ad => ad.imageUrl && ad.imageUrl !== "");
+  // Filtrer les pubs avec une image valide
+  const adsWithImage = ads.filter(ad => ad.imageUrl && ad.imageUrl !== "");
   // Slide par défaut si aucune pub avec image
   const defaultAd = [{
     id: "default",
     imageUrl: "", // toujours string
     title: "Bienvenue sur Sikasso Sugu",
-    description: "Profitez de nos offres et d’un service client à votre écoute.",
-    bgColor: "linear-gradient(90deg, #fbbf24 0%, #f59e42 100%)", // string, jamais null
+    description: "Profitez de nos offres et d'un service client à votre écoute.",
+    bgColor: "linear-gradient(90deg, #f5f5f5 0%, #e5e5e5 100%)", // Fond gris clair
     link: undefined, // Corrige le typage : pas de null
     productId: undefined, // Corrige le typage : jamais null
     categoryId: undefined, // Corrige le typage : jamais null
@@ -280,31 +258,30 @@ export default async function ProductsPage({
   return (
     <div className="animate-fade-in">
       {/* Carousel publicitaire toujours visible */}
-      <AdBannerCarousel ads={adsWithImage.length > 0 ? adsWithImage : defaultAd} />
+      <AdBannerCarousel ads={adsWithImage.length > 0 ? adsWithImage : defaultAd.map(ad => ({...ad, imageUrl: ad.imageUrl!}))} />
       <main>
-        {/* Grille des catégories publiques façon Jumia */}
+        {/* Grille des catégories publiques */}
         {publicCategories.length > 0 && (
-          <div className="max-w-7xl mx-auto px-2 py-4 grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 lg:gap-4">
-            {/* Carte spéciale WhatsApp */}
-            {/* Remplacement par le composant centralisé */}
+          <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-3 lg:gap-4">
+            {/* Carte WhatsApp */}
             <a
               href={`https://wa.me/${whatsappNumber.replace('+','')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-green-500 rounded-xl flex flex-col items-stretch p-0 shadow overflow-hidden group cursor-pointer"
+              className="bg-white border border-green-100 flex flex-col items-stretch p-0 overflow-hidden group cursor-pointer hover:border-green-300 transition-all duration-300"
             >
-              <div className="relative w-full aspect-square flex items-center justify-center">
-                <FaWhatsapp size={48} className="text-white animate-bounce" />
+              <div className="relative w-full aspect-square flex items-center justify-center bg-green-50">
+                <FaWhatsapp size={36} className="text-green-500" />
               </div>
-              <div className="w-full bg-white py-1 px-0.5 text-center">
-                <span className="text-green-700 font-bold text-[10px] truncate block w-full">Commande sur WhatsApp</span>
+              <div className="w-full bg-white py-2 px-1 text-center">
+                <span className="text-green-700 font-medium text-[10px] truncate block w-full">Commande WhatsApp</span>
               </div>
             </a>
             {publicCategories.map(cat => (
               <a
                 key={cat.id}
                 href={`/products/category/${cat.slug}`}
-                className="bg-white rounded-xl flex flex-col items-stretch p-0 shadow overflow-hidden group cursor-pointer hover:shadow-lg transition"
+                className="bg-white border border-gray-100 flex flex-col items-stretch p-0 overflow-hidden group cursor-pointer hover:border-gray-300 transition-all duration-300"
               >
                 <div className="relative w-full aspect-square">
                   {cat.imageUrl ? (
@@ -312,18 +289,18 @@ export default async function ProductsPage({
                       src={cat.imageUrl || '/images/placeholder.jpg'} 
                       alt={cat.name}
                       fill
-                      className="absolute inset-0 w-full h-full object-cover rounded-xl group-hover:scale-105 transition"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       priority={false}
                       loading="lazy"
                       quality={75}
                     />
                   ) : (
-                    <div className="absolute inset-0 w-full h-full bg-orange-100 flex items-center justify-center text-xs text-orange-400 rounded-xl">Aucune</div>
+                    <div className="absolute inset-0 w-full h-full bg-gray-50 flex items-center justify-center text-xs text-gray-400">Aucune</div>
                   )}
                 </div>
-                <div className="w-full bg-white py-1 px-0.5 text-center">
-                  <span className="text-gray-900 font-semibold text-[10px] truncate block w-full">{cat.name}</span>
+                <div className="w-full bg-white py-2 px-1 text-center">
+                  <span className="text-black font-medium text-[10px] truncate block w-full">{cat.name}</span>
                 </div>
               </a>
             ))}
@@ -347,10 +324,12 @@ export default async function ProductsPage({
             if (products.length === 0) return null;
             const showVoirPlus = products.length > 10;
             return (
-              <section key={section.id} className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8 my-8 rounded-2xl bg-gradient-to-br from-amber-50/80 to-white shadow-sm">
-                <div className="flex flex-row items-center justify-between mb-4 gap-2 w-full">
-                  <h2 className="flex-1 text-2xl sm:text-3xl font-extrabold text-amber-600 mb-1 text-left">{section.title}</h2>
-                  <a href={`/home-section/${section.id}`} className="inline-block text-amber-700 text-sm font-bold px-5 py-2 rounded-full border-2 border-amber-200 bg-amber-100 hover:bg-amber-200 shadow transition">Voir plus</a>
+              <section key={section.id} className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100">
+                <div className="flex flex-row items-center justify-between mb-6 gap-2 w-full">
+                  <h2 className="flex-1 text-xl font-medium text-black mb-0 text-left tracking-tight">{section.title}</h2>
+                  <a href={`/home-section/${section.id}`} className="inline-block text-black text-sm font-medium px-4 py-1.5 border border-gray-200 hover:bg-gray-50 transition-all duration-300">
+                    Voir plus
+                  </a>
                 </div>
                 <CustomHorizontalScroll>
                   <ProductGrid products={products.slice(0, 10)} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
@@ -364,6 +343,11 @@ export default async function ProductsPage({
           // Récupérer les 10 produits les plus vendus
           const topSelling = await prisma.orderItem.groupBy({
             by: ["productId"],
+            where: {
+              productId: { 
+                not: null 
+              },
+            },
             _sum: { quantity: true },
             orderBy: { _sum: { quantity: "desc" } },
             take: 10,
@@ -380,9 +364,9 @@ export default async function ProductsPage({
           );
           const topSellingProducts = topSellingProductsRaw.filter(Boolean).map(transformProduct);
           return topSellingProducts.length > 0 ? (
-            <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8 my-8 rounded-2xl bg-gradient-to-br from-amber-50/80 to-white shadow-sm">
-              <div className="flex items-center justify-start mb-4 gap-2">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-amber-600 mb-1 text-left">Les produits les plus vendus</h2>
+            <section className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100">
+              <div className="flex items-center justify-start mb-6 gap-2">
+                <h2 className="text-xl font-medium text-black mb-0 text-left tracking-tight">Les produits les plus vendus</h2>
               </div>
               <CustomHorizontalScroll>
                 <ProductGrid products={topSellingProducts} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
@@ -400,9 +384,9 @@ export default async function ProductsPage({
           });
           const healthProductsTransformed = healthProducts.map(transformProduct);
           return healthProductsTransformed.length > 0 ? (
-            <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8 my-8 rounded-2xl bg-gradient-to-br from-amber-50/80 to-white shadow-sm">
-              <div className="flex items-center justify-start mb-4 gap-2">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-amber-600 mb-1 text-left">Produits de santé</h2>
+            <section className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100">
+              <div className="flex items-center justify-start mb-6 gap-2">
+                <h2 className="text-xl font-medium text-black mb-0 text-left tracking-tight">Produits de santé</h2>
               </div>
               <CustomHorizontalScroll>
                 <ProductGrid products={healthProductsTransformed} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />

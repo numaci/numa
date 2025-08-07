@@ -6,6 +6,7 @@ interface LowStockProduct {
   id: string;
   name: string;
   stock: number;
+  price: number;
 }
 
 interface LowStockProductsProps {
@@ -13,10 +14,10 @@ interface LowStockProductsProps {
 }
 
 const LowStockProducts: React.FC<LowStockProductsProps> = ({ lowStockProducts }) => (
-  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-orange-100">
-    <div className="flex items-center gap-2 px-6 py-4 border-b border-orange-200 bg-gradient-to-r from-amber-50 via-orange-50 to-white rounded-t-2xl">
-      <FiAlertTriangle className="text-orange-500" size={22} />
-      <h3 className="text-lg font-bold text-orange-700">Stock faible</h3>
+  <div className="admin-table">
+    <div className="admin-table-header">
+      <FiAlertTriangle className="text-gray-700" size={22} />
+      <h3 className="text-lg font-semibold text-black tracking-tight antialiased">Stock faible</h3>
     </div>
     <div className="p-6">
       {lowStockProducts.length > 0 ? (
@@ -24,21 +25,21 @@ const LowStockProducts: React.FC<LowStockProductsProps> = ({ lowStockProducts })
           {lowStockProducts.map((product) => (
             <div
               key={product.id}
-              className="flex items-center justify-between p-4 border border-orange-100 rounded-xl bg-white/70 shadow hover:bg-orange-50/60 transition"
+              className="flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:bg-gray-50 transition-all duration-300 ease-in-out hover:scale-[1.02]"
             >
               <div>
-                <p className="font-bold text-orange-900">{product.name}</p>
-                <p className="text-xs text-orange-400">SKU: {product.sku || "N/A"}</p>
+                <p className="font-semibold text-black antialiased">{product.name}</p>
+                <p className="text-xs text-gray-500 antialiased">ID: {product.id.slice(-6)}</p>
               </div>
               <div className="text-right">
-                <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full shadow-lg mr-2 ${
-                  product.stock === 0 ? "bg-gradient-to-r from-red-400 to-red-600 text-white" :
-                  product.stock < 5 ? "bg-gradient-to-r from-orange-400 to-orange-600 text-white" :
-                  "bg-gradient-to-r from-yellow-300 to-yellow-500 text-yellow-900"
+                <span className={`admin-status-badge mr-2 ${
+                  product.stock === 0 ? "bg-red-600 text-white" :
+                  product.stock < 5 ? "bg-orange-500 text-white" :
+                  "bg-yellow-500 text-yellow-900"
                 }`}>
                   {product.stock} en stock
                 </span>
-                <p className="text-sm text-orange-700 font-semibold">
+                <p className="text-sm text-gray-700 font-semibold">
                   {formatCurrency(product.price)}
                 </p>
               </div>
@@ -46,7 +47,7 @@ const LowStockProducts: React.FC<LowStockProductsProps> = ({ lowStockProducts })
           ))}
         </div>
       ) : (
-        <p className="text-orange-400 text-center py-4">
+        <p className="text-gray-500 text-center py-8 antialiased">
           Tous les produits ont un stock suffisant
         </p>
       )}
@@ -54,4 +55,4 @@ const LowStockProducts: React.FC<LowStockProductsProps> = ({ lowStockProducts })
   </div>
 );
 
-export default LowStockProducts; 
+export default LowStockProducts;

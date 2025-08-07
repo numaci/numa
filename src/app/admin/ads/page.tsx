@@ -1,29 +1,124 @@
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import AdsTable from "./AdsTable";
+"use client";
 
-export default async function AdsAdminPage() {
-  const ads = await prisma.ad.findMany({ orderBy: { order: "asc" } });
+import { useState, useEffect, FormEvent } from 'react';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import PageHeader from '@/components/admin/PageHeader';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import AdsTable from './AdsTable';
+import { Ad } from '@prisma/client';
+
+export default function AdsPage() {
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [file, setFile] = useState<File | null>(null);
+  const [link, setLink] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchAds = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get('/api/ads');
+      setAds(response.data);
+    } catch (error) {
+      toast.error('Impossible de charger les publicités.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAds();
+  }, []);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!file) {
+      toast.error('Veuillez sélectionner une image.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append('imageUrl', file);
+    formData.append('link', link);
+
+    try {
+      await axios.post('/api/ads', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      toast.success('Publicité ajoutée avec succès!');
+      setFile(null);
+      setLink('');
+      // Clear file input
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+      if(fileInput) fileInput.value = '';
+      fetchAds(); // Refresh the list
+    } catch (error) {
+      toast.error("Erreur lors de l'ajout de la publicité.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette publicité?')) {
+      try {
+        await axios.delete(`/api/ads/${id}`);
+        toast.success('Publicité supprimée.');
+        fetchAds(); // Refresh the list
+      } catch (error) {
+        toast.error('Erreur lors de la suppression.');
+      }
+    }
+  };
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-orange-800">Gestion des Publicités</h1>
-          <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded text-sm font-semibold">{ads.length} pub{ads.length > 1 ? 's' : ''}</span>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/admin/ads/new" className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 focus:ring-2 focus:ring-orange-400 transition-colors">
-            <Plus className="w-4 h-4 mr-2 text-orange-200" /> Ajouter une publicité
-          </Link>
-          <Link href="/admin/shipping" className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-400 transition-colors">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 010 7.75" /></svg>
-            Configurer livraison
-          </Link>
-        </div>
+    <div className="space-y-8">
+      <PageHeader title="Gestion des Publicités" />
+      
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-4">Ajouter une nouvelle publicité</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="file-input" className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <Input
+              id="file-input"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+            />
+          </div>
+          <div>
+            <label htmlFor="link-input" className="block text-sm font-medium text-gray-700 mb-1">Lien de redirection (optionnel)</label>
+            <Input
+              id="link-input"
+              type="text"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://exemple.com/produit"
+            />
+          </div>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Ajout en cours...' : 'Ajouter la publicité'}
+          </Button>
+        </form>
       </div>
-      <AdsTable ads={ads} />
+
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-4">Publicités Actuelles</h3>
+        {isLoading ? (
+          <p>Chargement...</p>
+        ) : (
+          <AdsTable ads={ads} onDelete={handleDelete} />
+        )}
+      </div>
     </div>
   );
-} 
+}
+ 

@@ -26,17 +26,25 @@ export default async function PendingProductsPage() {
   const products = await getPendingProducts();
 
   return (
-    <div className="max-w-5xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Produits en attente de validation</h1>
-      {products.length === 0 ? (
-        <div className="text-gray-500">Aucun produit en attente.</div>
-      ) : (
-        <div className="space-y-6">
-          {products.map((product) => (
-            <ProductValidationCard key={product.id} product={product} />
-          ))}
+    <div className="bg-white min-h-screen py-6">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="admin-card mb-6">
+          <h1 className="text-3xl font-semibold tracking-tight antialiased text-black mb-2">Produits en attente de validation</h1>
+          <p className="text-gray-600 antialiased">Validez ou rejetez les produits soumis par les fournisseurs</p>
         </div>
-      )}
+        
+        {products.length === 0 ? (
+          <div className="admin-card text-center py-12">
+            <div className="text-gray-500 antialiased text-lg">Aucun produit en attente de validation.</div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {products.map((product) => (
+              <ProductValidationCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
-} 
+}

@@ -43,7 +43,7 @@ export default function CartPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
           <p className="mt-2 text-gray-600">Chargement du panier...</p>
         </div>
       </div>
@@ -70,39 +70,39 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
       {/* Tableau produits */}
       <div className="md:col-span-2">
-        <h1 className="text-3xl font-bold mb-8">Mon panier</h1>
+        <h1 className="text-2xl font-light text-gray-800 mb-8">Mon panier</h1>
         {items.length === 0 ? (
-          <div className="text-center text-gray-500 py-16">
+          <div className="text-center text-gray-500 py-16 border border-gray-100 bg-white">
             Votre panier est vide.<br />
-            <Link href="/products" className="text-amber-600 hover:underline">Voir les produits</Link>
+            <Link href="/products" className="text-gray-800 hover:underline">Voir les produits</Link>
           </div>
         ) : (
-          <div className="overflow-x-auto bg-white/90 rounded-2xl shadow-2xl">
-            <table className="min-w-full divide-y divide-amber-100">
-              <thead className="bg-amber-50">
+          <div className="overflow-x-auto bg-white border border-gray-100">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-amber-700 uppercase">Produit</th>
-                  <th className="px-6 py-3 text-center text-xs font-bold text-amber-700 uppercase">Prix</th>
-                  <th className="px-6 py-3 text-center text-xs font-bold text-amber-700 uppercase">Quantité</th>
-                  <th className="px-6 py-3 text-center text-xs font-bold text-amber-700 uppercase">Total</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produit</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Prix</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Quantité</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Total</th>
                   <th className="px-6 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-amber-50">
+              <tbody className="divide-y divide-gray-100">
                 {items.map((item) => (
-                  <tr key={item.productId} className="align-top hover:bg-amber-50/60 transition-colors">
+                  <tr key={item.productId} className="align-top hover:bg-gray-50 transition-colors">
                     {/* Produit */}
                     <td className="px-6 py-4 flex items-center gap-4 min-w-[220px]">
                       {item.imageUrl ? (
-                        <Image src={item.imageUrl} alt={item.name} width={64} height={64} className="w-16 h-16 rounded-xl shadow border border-amber-100 object-cover transition-transform duration-200 hover:scale-105" />
+                        <Image src={item.imageUrl} alt={item.name} width={64} height={64} className="w-16 h-16 border border-gray-100 object-cover" />
                       ) : (
-                        <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded-xl shadow border border-amber-100">📦</div>
+                        <div className="w-16 h-16 bg-gray-100 flex items-center justify-center border border-gray-100">📦</div>
                       )}
                       <div>
-                        <div className="font-semibold text-base line-clamp-1">{item.name}</div>
+                        <div className="font-medium text-base line-clamp-1">{item.name}</div>
                         {/* Détails optionnels (ex: couleur, modèle) */}
                         {(item as any).color && (
                           <div className="text-xs text-gray-500">Couleur : {(item as any).color}</div>
@@ -112,7 +112,7 @@ export default function CartPage() {
                         )}
                         {/* Badge promo */}
                         {(item as any).comparePrice && (item as any).comparePrice > item.price && (
-                          <span className="inline-block bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded mt-1">-
+                          <span className="inline-block bg-black text-white text-xs px-2 py-0.5 mt-1">-
                             {Math.round(((item as any).comparePrice - item.price) / (item as any).comparePrice * 100)}%
                           </span>
                         )}
@@ -120,7 +120,7 @@ export default function CartPage() {
                     </td>
                     {/* Prix */}
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <div className="font-bold text-base">{formatFCFA(item.price)}</div>
+                      <div className="font-medium text-base">{formatFCFA(item.price)}</div>
                       {(item as any).comparePrice && (item as any).comparePrice > item.price && (
                         <div className="text-xs text-gray-400 line-through">{formatFCFA((item as any).comparePrice)}</div>
                       )}
@@ -129,7 +129,7 @@ export default function CartPage() {
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          className="w-7 h-7 rounded-full bg-gray-100 text-lg font-bold hover:bg-amber-100 focus:ring-2 focus:ring-amber-400 transition-all disabled:opacity-50"
+                          className="w-7 h-7 border border-gray-200 text-lg font-medium hover:bg-gray-100 transition-all disabled:opacity-50"
                           onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
                           disabled={item.quantity <= 1}
                         >
@@ -137,7 +137,7 @@ export default function CartPage() {
                         </button>
                         <span className="w-8 text-center">{item.quantity}</span>
                         <button
-                          className="w-7 h-7 rounded-full bg-gray-100 text-lg font-bold hover:bg-amber-100 focus:ring-2 focus:ring-amber-400 transition-all disabled:opacity-50"
+                          className="w-7 h-7 border border-gray-200 text-lg font-medium hover:bg-gray-100 transition-all disabled:opacity-50"
                           onClick={() => updateQuantity(item.productId, Math.min(item.stock, item.quantity + 1))}
                           disabled={item.quantity >= item.stock}
                         >
@@ -146,14 +146,14 @@ export default function CartPage() {
                       </div>
                     </td>
                     {/* Total par article */}
-                    <td className="px-6 py-4 text-center font-bold text-base">
+                    <td className="px-6 py-4 text-center font-medium text-base">
                       {formatFCFA(item.price * item.quantity)}
                     </td>
                     {/* Supprimer */}
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => removeFromCart(item.productId)}
-                        className="w-8 h-8 flex items-center justify-center rounded-full text-red-500 hover:bg-red-100 hover:text-red-700 text-lg transition-colors"
+                        className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-700 text-lg transition-colors"
                         title="Supprimer"
                       >
                         ×
@@ -163,10 +163,10 @@ export default function CartPage() {
                 ))}
               </tbody>
             </table>
-            <div className="flex justify-between items-center mt-4 px-4 pb-4">
+            <div className="flex justify-between items-center mt-4 px-6 pb-4">
               <button
                 onClick={clearCart}
-                className="text-sm text-red-500 hover:underline"
+                className="text-sm text-gray-500 hover:text-gray-800 hover:underline"
               >
                 Vider le panier
               </button>
@@ -175,36 +175,36 @@ export default function CartPage() {
         )}
       </div>
       {/* Récapitulatif à droite */}
-      <div className="bg-white/90 rounded-2xl shadow-2xl p-8 space-y-4 h-fit flex flex-col justify-between">
-        <h2 className="text-2xl font-bold mb-4 text-amber-600">Récapitulatif</h2>
+      <div className="bg-white border border-gray-100 p-8 space-y-4 h-fit flex flex-col justify-between">
+        <h2 className="text-xl font-light mb-6 text-gray-800 pb-2 border-b border-gray-100">Récapitulatif</h2>
         <div className="flex justify-between mb-2">
-          <span className="text-gray-700">Sous-total ({items.reduce((sum, i) => sum + i.quantity, 0)} articles)</span>
-          <span className="font-semibold text-gray-900">{formatFCFA(subtotal)}</span>
+          <span className="text-gray-600">Sous-total ({items.reduce((sum, i) => sum + i.quantity, 0)} articles)</span>
+          <span className="font-medium text-gray-800">{formatFCFA(subtotal)}</span>
         </div>
         {savings > 0 && (
           <div className="flex justify-between">
-            <span>Économies</span>
-            <span className="text-red-500">- {formatFCFA(savings)}</span>
+            <span className="text-gray-600">Économies</span>
+            <span className="text-black">- {formatFCFA(savings)}</span>
           </div>
         )}
         <div className="flex justify-between mb-2">
-          <span className="text-gray-700">Livraison</span>
-          <span className="font-semibold text-gray-900">{shipping === 0 ? "Gratuite" : formatFCFA(shipping)}</span>
+          <span className="text-gray-600">Livraison</span>
+          <span className="font-medium text-gray-800">{shipping === 0 ? "Gratuite" : formatFCFA(shipping)}</span>
         </div>
-        <hr className="my-2 border-amber-100" />
-        <div className="flex justify-between items-center text-lg font-bold mb-4">
+        <hr className="my-4 border-gray-100" />
+        <div className="flex justify-between items-center text-lg font-medium mb-6">
           <span>Total estimé</span>
-          <span className="text-amber-600 text-2xl">{formatFCFA(total)}</span>
+          <span className="text-black text-xl">{formatFCFA(total)}</span>
         </div>
         <Link href="/checkout">
-          <Button className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-lg shadow-md transition-all duration-200 mt-2">
+          <Button className="w-full bg-black hover:bg-gray-900 text-white font-medium text-base py-3 transition-all duration-200">
             Passer à la caisse
           </Button>
         </Link>
-        <div className="text-center text-xs text-gray-500 mt-2">
-          <span>Créer un <Link href="/register" className="underline text-amber-600">compte</Link> et gagnez des bonus sur vos achats !</span>
+        <div className="text-center text-xs text-gray-500 mt-4">
+          <span>Créer un <Link href="/register" className="underline text-gray-800">compte</Link> et gagnez des bonus sur vos achats !</span>
         </div>
       </div>
     </div>
   );
-} 
+}

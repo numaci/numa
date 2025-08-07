@@ -4,7 +4,7 @@ import ProductDetailImages from "@/components/shop/ProductDetailImages";
 import ProductDetailClient from "./ProductDetailClient";
 import SimilarProducts from "@/components/shop/SimilarProducts";
 import ProductBreadcrumbs from "@/components/shop/ProductBreadcrumbs";
-import { ImageKitProvider } from "@imagekit/next";
+
 
 // Définir un type local pour le produit détaillé utilisé dans la page
 
@@ -16,7 +16,7 @@ type ProductDetail = {
   price: number;
   comparePrice?: number;
   shippingPrice: number | null;
-  supplierPrice: number | null;
+
   stock: number;
   sku: string | null;
   weight: number | null;
@@ -53,15 +53,15 @@ type ProductDetail = {
 };
 
 // Fonction pour convertir les objets Decimal/Date en types utilisables côté client
-function transformProduct(product: Record<string, unknown>): ProductDetail {
+function transformProduct(product: any): ProductDetail {
   return {
     ...product,
     price: product.price ? Number(product.price) : 0,
     comparePrice: product.comparePrice !== undefined && product.comparePrice !== null ? Number(product.comparePrice) : undefined,
     shippingPrice: product.shippingPrice ? Number(product.shippingPrice) : null,
-    supplierPrice: product.supplierPrice ? Number(product.supplierPrice) : null,
-    imageUrl: product.imageUrl ?? null,
-    images: product.images ?? null,
+
+    imageUrl: product.imageUrl as string | null,
+    images: product.images as string | null,
     createdAt: product.createdAt?.toString() ?? "",
     updatedAt: product.updatedAt?.toString() ?? "",
     reviews: product.reviews
@@ -70,8 +70,8 @@ function transformProduct(product: Record<string, unknown>): ProductDetail {
           createdAt: r.createdAt ? r.createdAt.toString() : "",
         }))
       : [],
-    _count: product._count ?? { reviews: 0 },
-    attributes: product.attributes ?? {},
+    _count: product._count ? { reviews: product._count.reviews } : { reviews: 0 },
+    attributes: product.attributes as Record<string, unknown> ?? {},
     variants: product.variants
       ? (product.variants as Array<unknown>).map((v: any) => ({
           ...v,
@@ -79,8 +79,9 @@ function transformProduct(product: Record<string, unknown>): ProductDetail {
         }))
       : [],
     category: {
-      ...(product.category as Record<string, unknown>),
-      slug: (product.category as Record<string, unknown>)?.slug ?? "",
+      id: product.category.id as string,
+      name: product.category.name as string,
+      slug: product.category.slug as string,
     },
   };
 }
@@ -192,12 +193,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   });
   const whatsappNumber = whatsappConfig?.number || "22300000000";
 
-  const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/ton_id_imagekit";
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header sticky façon Jumia mobile */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Breadcrumbs */}
         <ProductBreadcrumbs 
           categoryName={product.category.name}
@@ -206,15 +205,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         />
 
         {/* Contenu principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mt-8">
           {/* Images du produit */}
           <div className="lg:sticky lg:top-8">
-            <ImageKitProvider urlEndpoint={urlEndpoint}>
-              <ProductDetailImages product={{
-                ...product,
-                comparePrice: product.comparePrice ?? null,
-              }} />
-            </ImageKitProvider>
+            <ProductDetailImages product={{
+              ...product,
+              comparePrice: product.comparePrice ?? null,
+            }} />
           </div>
 
           {/* Informations du produit */}
@@ -228,7 +225,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         {/* Produits similaires */}
         {similarProducts.length > 0 && (
-          <div className="mt-16">
+          <div className="mt-24 mb-12">
             <SimilarProducts 
               products={similarProducts.map(p => ({
                 ...p,
@@ -242,4 +239,4 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
     </div>
   );
-} 
+}

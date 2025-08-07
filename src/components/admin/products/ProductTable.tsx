@@ -28,12 +28,12 @@ interface ProductTableProps {
   onToggleActive: (productId: string, isActive: boolean) => void;
 }
 
-// Statut badge moderne
+// Statut badge moderne avec palette NUMA
 const getStatusClass = (product: Product) => {
-  if (!product.isActive) return "bg-gradient-to-r from-gray-200 to-gray-400 text-gray-800";
-  if (product.stock === 0) return "bg-gradient-to-r from-red-400 to-red-600 text-white";
-  if (product.stock < 10) return "bg-gradient-to-r from-orange-400 to-orange-600 text-white";
-  return "bg-gradient-to-r from-green-400 to-green-600 text-white";
+  if (!product.isActive) return "bg-gray-200 text-gray-800";
+  if (product.stock === 0) return "bg-red-100 text-red-800";
+  if (product.stock < 10) return "bg-yellow-100 text-yellow-800";
+  return "bg-green-100 text-green-800";
 };
 
 // Composant du tableau des produits
@@ -63,27 +63,27 @@ export default function ProductTable({ products, onDelete, onToggleActive }: Pro
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-orange-100 overflow-visible z-0">
-      <div className="flex items-center gap-2 px-6 py-4 border-b border-orange-200 bg-gradient-to-r from-amber-50 via-orange-50 to-white rounded-t-2xl">
-        <FiBox className="text-orange-500" size={22} />
-        <h3 className="text-lg font-bold text-orange-700">Liste des produits</h3>
+    <div className="bg-white rounded-xl border border-gray-200 overflow-visible z-0">
+      <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <FiBox className="text-gray-700" size={22} />
+        <h3 className="text-lg font-semibold tracking-tight antialiased text-black">Liste des produits</h3>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-orange-100 text-sm md:text-base">
-          <thead className="bg-gradient-to-r from-amber-100 via-orange-50 to-white">
+        <table className="admin-table">
+          <thead>
             <tr>
-              <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider rounded-tl-2xl whitespace-nowrap">Produit</th>
-              <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider whitespace-nowrap">Catégorie</th>
-              <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider whitespace-nowrap">Prix</th>
-              <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider whitespace-nowrap">Stock</th>
-              <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider whitespace-nowrap">Statut</th>
-              <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Date</th>
-              <th className="px-4 md:px-6 py-3 text-right text-xs font-bold text-orange-600 uppercase tracking-wider rounded-tr-2xl whitespace-nowrap">Actions</th>
+              <th className="text-left">Produit</th>
+              <th className="text-left">Catégorie</th>
+              <th className="text-left">Prix</th>
+              <th className="text-left">Stock</th>
+              <th className="text-left">Statut</th>
+              <th className="text-left hidden sm:table-cell">Date</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white/70 divide-y divide-orange-50">
+          <tbody>
             {products.map((product) => (
-              <tr key={product.id} className="hover:bg-orange-50/60 transition">
+              <tr key={product.id} className="hover:bg-gray-50 transition-colors duration-200">
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
@@ -91,69 +91,69 @@ export default function ProductTable({ products, onDelete, onToggleActive }: Pro
                         <img
                           src={product.imageUrl}
                           alt={product.name}
-                          className="h-10 w-10 rounded-xl object-cover shadow border border-orange-100"
+                          className="h-10 w-10 rounded-lg object-cover border border-gray-200"
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).src = '/placeholder.png';
                           }}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                          <span className="text-orange-400 text-sm">IMG</span>
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                          <span className="text-gray-500 text-sm">IMG</span>
                         </div>
                       )}
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-bold text-orange-800">
+                      <div className="text-sm font-semibold text-black antialiased">
                         {product.name}
                       </div>
-                      <div className="text-xs text-orange-400">
+                      <div className="text-xs text-gray-500 antialiased">
                         {product.slug}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-orange-900 font-semibold">
+                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-black font-medium antialiased">
                   {product.category.name}
                 </td>
-                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-orange-900 font-semibold">
+                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-black font-semibold antialiased">
                   {formatPrice(product.price)}
                 </td>
-                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-orange-900 font-semibold">
+                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-black font-medium antialiased">
                   {product.stock}
                 </td>
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full shadow ${getStatusClass(product)}`}>
+                  <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-lg ${getStatusClass(product)}`}>
                     {getProductStatus(product)}
                   </span>
                 </td>
-                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-orange-500 hidden sm:table-cell">
+                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-600 hidden sm:table-cell antialiased">
                   {formatDate(product.createdAt)}
                 </td>
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="relative flex justify-end">
                     <button
-                      className="p-2 rounded-full bg-white/10 hover:bg-orange-100 text-orange-600 hover:text-orange-900 transition focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-black transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                       title="Actions"
                       onClick={() => setOpenMenu(openMenu === product.id ? null : product.id)}
                     >
                       <MoreVertical className="w-5 h-5" />
                     </button>
                     {openMenu === product.id && (
-                      <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-orange-100 z-50 animate-fade-in">
+                      <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                         <button
-                          className="w-full flex items-center gap-2 px-4 py-2 text-orange-700 hover:bg-orange-50 rounded-t-xl transition"
+                          className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors duration-200 antialiased"
                           onClick={() => { window.location.href = `/admin/products/${product.id}`; setOpenMenu(null); }}
                         >
                           <Eye className="w-4 h-4" /> Voir
                         </button>
                         <button
-                          className="w-full flex items-center gap-2 px-4 py-2 text-indigo-700 hover:bg-indigo-50 transition"
+                          className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors duration-200 antialiased"
                           onClick={() => { window.location.href = `/admin/products/${product.id}/edit`; setOpenMenu(null); }}
                         >
                           <Edit className="w-4 h-4" /> Modifier
                         </button>
                         <button
-                          className="w-full flex items-center gap-2 px-4 py-2 text-red-700 hover:bg-red-50 rounded-b-xl transition"
+                          className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-b-lg transition-colors duration-200 antialiased"
                           onClick={() => { onDelete(product.id); setOpenMenu(null); }}
                         >
                           <Trash2 className="w-4 h-4" /> Supprimer

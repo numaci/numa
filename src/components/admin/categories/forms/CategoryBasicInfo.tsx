@@ -1,6 +1,8 @@
 "use client";
 
 import FormField from "./FormField";
+import { IKUpload } from "imagekitio-react";
+import { Image, Upload, X } from "lucide-react";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 
 // Types pour les props du composant
@@ -40,16 +42,14 @@ export default function CategoryBasicInfo({
           name="name"
           value={formData.name}
           onChange={onInputChange}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-900 placeholder-orange-300 ${
-            errors.name ? "border-red-500" : "border-orange-300"
-          }`}
-          placeholder="Ex: Électronique"
+          className="admin-input"
+          placeholder="Ex: Vêtements Femme, Chaussures Homme, Accessoires..."
         />
       </FormField>
 
       {/* Slug */}
       <FormField
-        label="Slug"
+        label="Slug (URL)"
         name="slug"
         error={errors.slug}
         required
@@ -60,11 +60,12 @@ export default function CategoryBasicInfo({
           name="slug"
           value={formData.slug}
           onChange={onInputChange}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-900 placeholder-orange-300 ${
-            errors.slug ? "border-red-500" : "border-orange-300"
-          }`}
-          placeholder="Ex: electronique"
+          className="admin-input"
+          placeholder="Ex: vetements-femme, chaussures-homme, accessoires..."
         />
+        <p className="text-xs text-gray-500 mt-1 antialiased">
+          Utilisé dans l'URL de la catégorie. Utilisez des tirets pour séparer les mots.
+        </p>
       </FormField>
 
       {/* Description */}
@@ -78,9 +79,12 @@ export default function CategoryBasicInfo({
           value={formData.description}
           onChange={onInputChange}
           rows={4}
-          className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-900 placeholder-orange-300"
-          placeholder="Description de la catégorie..."
+          className="admin-input"
+          placeholder="Décrivez cette catégorie de vêtements : styles, occasions, public cible..."
         />
+        <p className="text-xs text-gray-500 mt-1 antialiased">
+          Cette description apparaîtra sur la page de la catégorie pour aider vos clients.
+        </p>
       </FormField>
 
       {/* Image de la catégorie */}
@@ -94,12 +98,12 @@ export default function CategoryBasicInfo({
           onRemove={onImageRemove}
           currentImage={formData.imageUrl}
           folder="categories"
-          className="w-full border border-orange-300 rounded-lg"
+          className="w-full border border-gray-300 rounded-lg"
         />
-        <p className="text-sm text-orange-400 mt-2">
-          L'image est optionnelle. Elle sera utilisée pour représenter la catégorie dans le catalogue.
+        <p className="text-sm text-gray-600 mt-2 antialiased">
+          Image représentative de la catégorie (optionnelle). Recommandé : 400x300px minimum.
         </p>
       </FormField>
     </div>
   );
-} 
+}

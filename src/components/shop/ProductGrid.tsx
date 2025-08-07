@@ -146,13 +146,13 @@ export default function ProductGrid({
             size="sm"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="rounded-full border-amber-400 text-amber-600 hover:bg-amber-50"
+            className="border-gray-200 text-gray-700 hover:bg-gray-50"
           >
             ← Précédent
           </Button>
 
           {/* Numéros de page */}
-          <div className="flex space-x-1">
+          <div className="flex space-x-2">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
               if (
                 page === 1 ||
@@ -165,7 +165,7 @@ export default function ProductGrid({
                     variant={page === currentPage ? "default" : "outline"}
                     size="sm"
                     onClick={() => onPageChange(page)}
-                    className={`w-10 h-10 p-0 rounded-full ${page === currentPage ? 'bg-amber-500 text-white' : 'border-amber-300 text-amber-600 hover:bg-amber-50'}`}
+                    className={`w-9 h-9 p-0 ${page === currentPage ? 'bg-black text-white' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
                   >
                     {page}
                   </Button>
@@ -175,7 +175,7 @@ export default function ProductGrid({
                 page === currentPage + 2
               ) {
                 return (
-                  <span key={page} className="px-2 py-2 text-gray-500">
+                  <span key={page} className="px-2 py-2 text-gray-400">
                     ...
                   </span>
                 );
@@ -190,7 +190,7 @@ export default function ProductGrid({
             size="sm"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="rounded-full border-amber-400 text-amber-600 hover:bg-amber-50"
+            className="border-gray-200 text-gray-700 hover:bg-gray-50"
           >
             Suivant →
           </Button>
@@ -198,4 +198,4 @@ export default function ProductGrid({
       )}
     </div>
   );
-} 
+}

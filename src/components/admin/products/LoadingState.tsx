@@ -9,8 +9,8 @@ interface LoadingStateProps {
 export default function LoadingState({ message = "Chargement..." }: LoadingStateProps) {
   return (
     <div className="p-8 text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-      <p className="mt-2 text-gray-600">{message}</p>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+      <p className="mt-2 text-gray-600 antialiased">{message}</p>
     </div>
   );
-} 
+}

@@ -1,10 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns";
 import DashboardHeader from "@/app/admin/dashboard/DashboardHeader";
-import StatCardsGrid from "@/app/admin/dashboard/StatCardsGrid";
 import RecentOrders from "@/app/admin/dashboard/RecentOrders";
 import LowStockProducts from "@/app/admin/dashboard/LowStockProducts";
-import TopSellingProducts from "@/app/admin/dashboard/TopSellingProducts";
 
 // Interface TypeScript pour les statistiques du dashboard
 // Définit la structure des données retournées par getDashboardStats()
@@ -259,17 +257,52 @@ export default async function AdminDashboardPage() {
   const stats = await getDashboardStats();
 
   return (
-    <div className="bg-[#f8fafc] min-h-screen space-y-6"> {/* Conteneur principal harmonisé avec le client */}
-      {/* En-tête du dashboard avec titre et actions */}
+    <div className="bg-white min-h-screen space-y-6">
+      {/* En-tête du dashboard */}
       <DashboardHeader />
       
-      {/* Grille des cartes de statistiques principales */}
-      <StatCardsGrid stats={stats} />
+      {/* Cartes de statistiques simplifiées - seulement commandes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Commandes aujourd'hui */}
+        <div className="admin-card">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="uppercase text-xs font-semibold tracking-wider mb-2 antialiased text-gray-600">
+                Commandes aujourd'hui
+              </div>
+              <div className="text-3xl font-semibold tracking-tight antialiased text-black">
+                {stats.todayOrders}
+              </div>
+            </div>
+            <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gray-100">
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Commandes ce mois */}
+        <div className="admin-card">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="uppercase text-xs font-semibold tracking-wider mb-2 antialiased text-gray-600">
+                Commandes ce mois
+              </div>
+              <div className="text-3xl font-semibold tracking-tight antialiased text-black">
+                {stats.monthlyOrders}
+              </div>
+            </div>
+            <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gray-100">
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
       
-      {/* Section des produits les plus vendus */}
-      <TopSellingProducts topSellingProducts={stats.topSellingProducts} />
-      
-      {/* Grille de 2 colonnes pour les sections secondaires */}
+      {/* Grille de 2 colonnes pour les sections principales */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Commandes récentes */}
         <RecentOrders recentOrders={stats.recentOrders} />
@@ -279,4 +312,4 @@ export default async function AdminDashboardPage() {
       </div>
     </div>
   );
-} 
+}

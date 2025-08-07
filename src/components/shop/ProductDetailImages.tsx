@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Image, ImageKitProvider } from "@imagekit/next";
+import Image from "next/image";
 import { FaChevronLeft, FaChevronRight, FaExpand } from "react-icons/fa";
 
 interface ProductDetailImagesProps {
@@ -54,18 +54,16 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
 
   if (allImages.length === 0) {
     return (
-      <div className="aspect-square relative overflow-hidden rounded-2xl bg-gray-100 shadow-lg flex items-center justify-center">
-        <span className="text-gray-400 text-6xl">📦</span>
+      <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center border border-gray-200">
+        <span className="text-gray-300 text-6xl">📦</span>
       </div>
     );
   }
 
-  const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/ton_id_imagekit";
-
   return (
-    <ImageKitProvider urlEndpoint={urlEndpoint}>
+    <>
       {/* Image principale */}
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100 shadow-lg group">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm group border border-gray-200">
         <Image
           src={allImages[selectedImageIndex]}
           alt={`${product.name} - Image ${selectedImageIndex + 1}`}
@@ -77,7 +75,7 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
         {/* Bouton zoom */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="absolute top-4 right-4 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+          className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
         >
           <FaExpand size={16} />
         </button>
@@ -87,13 +85,13 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
           <>
             <button
               onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
             >
               <FaChevronLeft size={16} />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
             >
               <FaChevronRight size={16} />
             </button>
@@ -102,7 +100,7 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
 
         {/* Badge de réduction */}
         {discountPercentage > 0 && (
-          <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow">
+          <div className="absolute top-4 left-4 bg-black text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm">
             -{discountPercentage}%
           </div>
         )}
@@ -114,22 +112,7 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
           </div>
         )} */}
 
-        {/* Indicateurs de navigation */}
-        {allImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-            {allImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedImageIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                  index === selectedImageIndex 
-                    ? "bg-white shadow-lg" 
-                    : "bg-white/50 hover:bg-white/75"
-                }`}
-              />
-            ))}
-          </div>
-        )}
+
       </div>
 
       {/* Galerie d'images */}
@@ -139,10 +122,10 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
             <button
               key={index}
               onClick={() => setSelectedImageIndex(index)}
-              className={`aspect-square relative overflow-hidden rounded-lg bg-gray-100 transition-all duration-200 ${
+              className={`aspect-square relative overflow-hidden rounded-lg bg-white border transition-all duration-200 ${
                 index === selectedImageIndex
-                  ? "ring-2 ring-amber-500 ring-offset-2"
-                  : "hover:opacity-80"
+                  ? "ring-1 ring-black border-black"
+                  : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <Image
@@ -160,7 +143,7 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
       {/* Modal pour zoom */}
       {isModalOpen && (
         <div 
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
           onClick={() => setIsModalOpen(false)}
         >
           <div className="relative max-w-4xl max-h-full">
@@ -198,6 +181,6 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
           </div>
         </div>
       )}
-    </ImageKitProvider>
+    </>
   );
-} 
+}

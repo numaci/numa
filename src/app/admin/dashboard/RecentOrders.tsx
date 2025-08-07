@@ -24,42 +24,42 @@ function timeAgo(dateString: string) {
 }
 
 const statusStyles = {
-  DELIVERED: "bg-gradient-to-r from-green-400 to-green-600 text-white",
-  SHIPPED: "bg-gradient-to-r from-blue-400 to-blue-600 text-white",
-  PROCESSING: "bg-gradient-to-r from-yellow-300 to-yellow-500 text-yellow-900",
-  CANCELLED: "bg-gradient-to-r from-red-400 to-red-600 text-white",
-  DEFAULT: "bg-gradient-to-r from-gray-200 to-gray-400 text-gray-800"
+  DELIVERED: "bg-green-600 text-white",
+  SHIPPED: "bg-blue-600 text-white",
+  PROCESSING: "bg-yellow-500 text-yellow-900",
+  CANCELLED: "bg-red-600 text-white",
+  DEFAULT: "bg-gray-400 text-white"
 };
 
 const RecentOrders: React.FC<RecentOrdersProps> = ({ recentOrders }) => (
-  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-orange-100">
-    <div className="flex items-center gap-2 px-6 py-4 border-b border-orange-200 bg-gradient-to-r from-amber-50 via-orange-50 to-white rounded-t-2xl">
-      <FiClock className="text-orange-500" size={22} />
-      <h3 className="text-lg font-bold text-orange-700">Commandes récentes</h3>
+  <div className="admin-table">
+    <div className="admin-table-header">
+      <FiClock className="text-gray-700" size={22} />
+      <h3 className="text-lg font-semibold text-black tracking-tight antialiased">Commandes récentes</h3>
     </div>
     <div className="overflow-visible">
-      <table className="min-w-full divide-y divide-orange-100">
-        <thead className="bg-gradient-to-r from-amber-100 via-orange-50 to-white">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider rounded-tl-2xl">Commande</th>
-            <th className="px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider">Client</th>
-            <th className="px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider">Montant</th>
-            <th className="px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider">Statut</th>
-            <th className="px-6 py-3 text-left text-xs font-bold text-orange-600 uppercase tracking-wider rounded-tr-2xl">Date</th>
+            <th className="admin-table-th">Commande</th>
+            <th className="admin-table-th">Client</th>
+            <th className="admin-table-th">Montant</th>
+            <th className="admin-table-th">Statut</th>
+            <th className="admin-table-th">Date</th>
           </tr>
         </thead>
-        <tbody className="bg-white/70 divide-y divide-orange-50">
+        <tbody className="bg-white divide-y divide-gray-200">
           {recentOrders.map((order) => (
-            <tr key={order.id} className="hover:bg-orange-50/60 transition">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-orange-900">#{order.orderNumber}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-900">{order.user.firstName} {order.user.lastName}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-900 font-semibold">{formatCurrency(order.total)}</td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full shadow ${statusStyles[order.status] || statusStyles.DEFAULT}`}>
+            <tr key={order.id} className="admin-table-row">
+              <td className="admin-table-td text-sm font-semibold text-black antialiased">#{order.id.slice(-6)}</td>
+              <td className="admin-table-td text-sm text-gray-700 antialiased">Client #{order.id.slice(-3)}</td>
+              <td className="admin-table-td text-sm text-black font-semibold antialiased">{formatCurrency(order.total)}</td>
+              <td className="admin-table-td">
+                <span className={`admin-status-badge ${statusStyles[order.status as keyof typeof statusStyles] || statusStyles.DEFAULT}`}>
                   {order.status}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-500">{new Date(order.createdAt).toLocaleDateString('fr-FR')}</td>
+              <td className="admin-table-td text-sm text-gray-600 antialiased">{new Date(order.createdAt).toLocaleDateString('fr-FR')}</td>
             </tr>
           ))}
         </tbody>

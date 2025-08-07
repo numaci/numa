@@ -3,11 +3,11 @@
 import {
   CategoryFilters,
   CategoryTable,
-  PageHeader,
   LoadingState,
   ErrorState,
   DeleteModal,
 } from "@/components/admin/categories";
+import PageHeader from "@/components/admin/PageHeader";
 import { useCategories } from "@/hooks/useCategories";
 
 // Page principale de gestion des catégories
@@ -32,50 +32,51 @@ export default function CategoriesPage() {
   } = useCategories();
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Catégories</h1>
-        <div className="flex gap-4">
-          <a href="/admin/categories/new" className="inline-block px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700">Nouvelle Catégorie</a>
-          <a href="/admin/home-sections" className="inline-block px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700">Gérer les sections d'accueil</a>
+    <div className="bg-white min-h-screen py-6">
+      <div className="max-w-6xl mx-auto px-4">
+        <PageHeader 
+          title="Gestion des catégories"
+          subtitle="Créez et gérez les catégories de produits de votre boutique"
+          actionLabel="Nouvelle Catégorie"
+          actionHref="/admin/categories/new"
+        />
+        {/* Filtres et recherche */}
+        <CategoryFilters
+          searchTerm={filters.search}
+          statusFilter={filters.status}
+          onSearchChange={(value) => updateFilters({ search: value })}
+          onStatusChange={(value) => updateFilters({ status: value })}
+          onReset={resetFilters}
+        />
+
+        {/* Tableau des catégories */}
+        <div className="admin-card overflow-hidden">
+          {loading ? (
+            <LoadingState message="Chargement des catégories..." />
+          ) : error ? (
+            <ErrorState error={error} onRetry={fetchCategories} />
+          ) : (
+            <CategoryTable
+              categories={categories}
+              onDelete={openDeleteModal}
+            />
+          )}
         </div>
-      </div>
-      {/* Filtres et recherche */}
-      <CategoryFilters
-        searchTerm={filters.search}
-        statusFilter={filters.status}
-        onSearchChange={(value) => updateFilters({ search: value })}
-        onStatusChange={(value) => updateFilters({ status: value })}
-        onReset={resetFilters}
-      />
 
-      {/* Tableau des catégories */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        {loading ? (
-          <LoadingState message="Chargement des catégories..." />
-        ) : error ? (
-          <ErrorState error={error} onRetry={fetchCategories} />
-        ) : (
-          <CategoryTable
-            categories={categories}
-            onDelete={openDeleteModal}
-          />
-        )}
+        {/* Modal de confirmation de suppression */}
+        <DeleteModal
+          isOpen={deleteModalOpen}
+          onClose={closeDeleteModal}
+          onConfirm={confirmDelete}
+          title="Confirmer la suppression"
+          message="Êtes-vous sûr de vouloir supprimer cette catégorie ?"
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          categoryName={categoryToDelete?.name}
+          productCount={categoryToDelete?.productCount}
+          loading={deleting}
+        />
       </div>
-
-      {/* Modal de confirmation de suppression */}
-      <DeleteModal
-        isOpen={deleteModalOpen}
-        onClose={closeDeleteModal}
-        onConfirm={confirmDelete}
-        title="Confirmer la suppression"
-        message="Êtes-vous sûr de vouloir supprimer cette catégorie ?"
-        confirmText="Supprimer"
-        cancelText="Annuler"
-        categoryName={categoryToDelete?.name}
-        productCount={categoryToDelete?.productCount}
-        loading={deleting}
-      />
     </div>
   );
 } 

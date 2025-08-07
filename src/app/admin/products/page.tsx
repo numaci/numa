@@ -7,8 +7,8 @@ import {
   DeleteModal,
   LoadingState,
   ErrorState,
-  PageHeader,
 } from "@/components/admin/products";
+import PageHeader from "@/components/admin/PageHeader";
 import { useProducts } from "@/hooks/useProducts";
 import Link from 'next/link';
 
@@ -36,18 +36,14 @@ export default function ProductsPage() {
   } = useProducts();
 
   return (
-    <div className="flex flex-col gap-6 overflow-visible">
+    <div className="bg-white min-h-screen space-y-6">
       {/* En-tête de la page */}
-      <PageHeader
+      <PageHeader 
         title="Gestion des produits"
         subtitle="Gérez votre catalogue de produits"
         actionLabel="Nouveau produit"
         actionHref="/admin/products/new"
       />
-
-      <div className="mb-4 flex justify-end">
-        <Link href="/admin/products/pending" className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded font-semibold transition">Valider les produits en attente</Link>
-      </div>
 
       {/* Filtres et recherche */}
       <ProductFilters
@@ -62,7 +58,7 @@ export default function ProductsPage() {
       />
 
       {/* Tableau des produits */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-visible z-0">
+      <div className="admin-card overflow-visible z-0">
         {loading ? (
           <LoadingState message="Chargement des produits..." />
         ) : error ? (

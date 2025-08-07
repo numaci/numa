@@ -47,61 +47,128 @@ export default function AddAdminPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-amber-50 via-white to-orange-50 py-8">
-      <div className="bg-white/90 rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-amber-700">Ajouter un nouvel admin</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-amber-700">Prénom</label>
-            <input
-              type="text"
-              name="firstName"
-              value={form.firstName}
-              onChange={handleChange}
-              className="w-full border rounded-full px-4 py-2 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none"
-              required
-            />
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header avec navigation */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-4 mb-4">
+          <button 
+            onClick={() => router.back()}
+            className="admin-button-secondary"
+          >
+            ← Retour
+          </button>
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 antialiased">👤 Nouvel Administrateur</h1>
+          <p className="text-gray-600 mt-1 antialiased">Créez un nouveau compte administrateur pour votre boutique NUMA</p>
+        </div>
+      </div>
+
+      {/* Formulaire */}
+      <div className="admin-card">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Informations personnelles */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 antialiased">Informations personnelles</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 antialiased">Prénom *</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  className="admin-input"
+                  placeholder="Ex: Jean"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 antialiased">Nom *</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  className="admin-input"
+                  placeholder="Ex: Dupont"
+                  required
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-amber-700">Nom</label>
-            <input
-              type="text"
-              name="lastName"
-              value={form.lastName}
-              onChange={handleChange}
-              className="w-full border rounded-full px-4 py-2 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none"
-              required
-            />
+
+          {/* Informations de connexion */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 antialiased">Informations de connexion</h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 antialiased">Adresse email *</label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                className="admin-input"
+                placeholder="admin@numa-boutique.com"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1 antialiased">
+                Cette adresse sera utilisée pour se connecter à l'administration
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 antialiased">Mot de passe *</label>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                className="admin-input"
+                placeholder="Mot de passe sécurisé"
+                required
+                minLength={8}
+              />
+              <p className="text-xs text-gray-500 mt-1 antialiased">
+                Minimum 8 caractères. Utilisez un mot de passe fort.
+              </p>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-amber-700">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full border rounded-full px-4 py-2 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none"
-              required
-            />
+
+          {/* Messages d'état */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg antialiased">
+              ❌ {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg antialiased">
+              ✅ {success}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+            <button 
+              type="button"
+              onClick={() => router.back()}
+              className="admin-button-secondary"
+              disabled={loading}
+            >
+              Annuler
+            </button>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="admin-button-primary"
+            >
+              {loading ? "⏳ Création..." : "✅ Créer l'administrateur"}
+            </button>
           </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-amber-700">Mot de passe</label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              className="w-full border rounded-full px-4 py-2 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none"
-              required
-            />
-          </div>
-          {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">{error}</div>}
-          {success && <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded">{success}</div>}
-          <Button type="submit" disabled={loading} className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-base shadow-md transition-all duration-200">
-            {loading ? "Création..." : "Créer l'admin"}
-          </Button>
         </form>
       </div>
     </div>
   );
-} 
+}

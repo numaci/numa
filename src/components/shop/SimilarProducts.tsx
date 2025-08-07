@@ -1,55 +1,37 @@
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
+import { Product } from "@/types";
 
 interface SimilarProductsProps {
-  products: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    price: number;
-    comparePrice?: number;
-    imageUrl?: string;
-    isActive: boolean;
-    stock: number;
-    description?: string;
-    category: {
-      name: string;
-      slug: string;
-    };
-  }>;
+  products: Product[];
   currentProductId: string;
 }
 
 export default function SimilarProducts({ products, currentProductId }: SimilarProductsProps) {
-  // Filtrer le produit actuel
-  const filteredProducts = products.filter(product => product.id !== currentProductId);
+  // Filtrer pour exclure le produit actuel et limiter à 4 produits
+  const filteredProducts = products
+    .filter(p => p.id !== currentProductId)
+    .slice(0, 4);
 
-  if (filteredProducts.length === 0) {
-    return null;
-  }
+  if (filteredProducts.length === 0) return null;
 
   return (
-    <section className="bg-white rounded-2xl shadow-lg p-6">
+    <section>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Produits similaires</h2>
+        <h2 className="text-2xl font-medium text-black tracking-tight">Produits similaires</h2>
         <Link 
           href="/products" 
-          className="text-amber-600 hover:text-amber-800 font-semibold text-sm"
+          className="text-sm text-black hover:text-gray-600 transition-colors duration-200"
         >
-          Voir tous les produits →
+          Voir tous les produits
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {filteredProducts.slice(0, 4).map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            hideCartActions={false}
-            smallCard={false}
-          />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        {filteredProducts.map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </section>
   );
-} 
+}

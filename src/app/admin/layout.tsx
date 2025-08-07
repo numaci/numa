@@ -27,15 +27,15 @@ export default function AdminLayout({
   // Si c'est la page de connexion ou de setup, on affiche directement les enfants
   // sans vérification d'authentification
   if (isLoginPage || isSetupPage) {
-    return <div className="min-h-screen bg-gray-50">{children}</div>;
+    return <div className="min-h-screen bg-white">{children}</div>;
   }
 
   // Affichage du chargement pendant la vérification de la session
   // NextAuth vérifie automatiquement la validité du token
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Chargement...</div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-lg font-medium text-gray-700 antialiased">Chargement...</div>
       </div>
     );
   }
@@ -65,18 +65,18 @@ export default function AdminLayout({
 
   // Layout principal pour les pages admin authentifiées
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="admin-layout min-h-screen bg-white antialiased">
       {/* Sidebar desktop */}
       <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       {/* Wrapper principal du contenu, avec padding-left pour ne pas passer sous la sidebar */}
-      <div className="md:pl-64 pl-0 transition-all">
+      <div className="md:pl-64 pl-0 transition-all duration-300 ease-in-out">
         <div className="flex flex-col overflow-visible">
           <AdminHeader onBurgerClick={() => setSidebarOpen(true)} />
-          <main className="flex-1 overflow-visible p-6">
+          <main className="flex-1 overflow-visible p-6 max-w-screen-xl mx-auto">
             {children}
           </main>
         </div>
       </div>
     </div>
   );
-} 
+}

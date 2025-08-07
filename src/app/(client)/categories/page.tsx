@@ -16,22 +16,22 @@ export default async function CategoriesPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">Catégories</h1>
+    <div className="max-w-6xl mx-auto px-4 py-12">
+      <h1 className="text-2xl font-medium mb-8 text-center tracking-tight">Catégories</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {categories.map((cat) => (
           <Link
             key={cat.id}
             href={`/products/category/${cat.slug}`}
-            className="group block rounded-lg shadow hover:shadow-lg transition overflow-hidden bg-white dark:bg-gray-900"
+            className="group block transition overflow-hidden bg-white border border-gray-100 hover:border-gray-200"
           >
-            <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-800">
+            <div className="relative w-full aspect-square bg-gray-50">
               {cat.imageUrl ? (
                 <Image
                   src={cat.imageUrl}
                   alt={cat.name}
                   fill
-                  className="object-cover group-hover:scale-105 transition"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                   sizes="(max-width: 768px) 100vw, 20vw"
                 />
               ) : (
@@ -40,12 +40,12 @@ export default async function CategoriesPage() {
                 </div>
               )}
             </div>
-            <div className="p-3 text-center">
-              <span className="font-medium text-lg">{cat.name}</span>
+            <div className="p-4 text-center">
+              <span className="font-medium text-sm text-black">{cat.name}</span>
             </div>
           </Link>
         ))}
       </div>
     </div>
   );
-} 
+}

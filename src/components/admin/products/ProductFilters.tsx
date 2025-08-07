@@ -40,18 +40,18 @@ export default function ProductFilters({
   onReset,
 }: ProductFiltersProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-orange-300 p-4">
+    <div className="admin-card">
       <div className="flex flex-col md:flex-row gap-4">
         {/* Recherche */}
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
             <input
               type="text"
               placeholder="Rechercher un produit..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-900 placeholder-orange-300"
+              className="admin-input pl-10 placeholder-gray-500 text-black antialiased"
             />
           </div>
         </div>
@@ -61,7 +61,7 @@ export default function ProductFilters({
           <select
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
-            className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-900"
+            className="admin-input text-black antialiased"
           >
             <option value="">Toutes les catégories</option>
             {categories.map((category) => (
@@ -77,7 +77,7 @@ export default function ProductFilters({
           <select
             value={statusFilter}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-900"
+            className="admin-input text-black antialiased"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -90,12 +90,12 @@ export default function ProductFilters({
         {/* Bouton de réinitialisation */}
         <button
           onClick={onReset}
-          className="inline-flex items-center px-4 py-2 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-50 transition-colors"
+          className="admin-button admin-button-secondary inline-flex items-center"
         >
-          <RotateCcw className="w-4 h-4 mr-2 text-orange-400" />
+          <RotateCcw className="w-4 h-4 mr-2 text-gray-600" />
           Réinitialiser
         </button>
       </div>
     </div>
   );
-} 
+}

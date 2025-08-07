@@ -27,7 +27,23 @@ export function useCategoryForm(categoryId?: string) {
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!categoryId);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Gestion de l'upload d'image
+  const handleImageUpload = (url: string) => {
+    setFormData(prev => ({ ...prev, imageUrl: url }));
+    // Effacer l'erreur d'image s'il y en a une
+    if (errors.imageUrl) {
+      setErrors(prev => ({ ...prev, imageUrl: "" }));
+    }
+  };
+
+  // Gestion de la suppression d'image
+  const handleImageRemove = () => {
+    setFormData(prev => ({ ...prev, imageUrl: "" }));
+  };
+
+
 
   // Chargement de la catégorie existante si on est en mode édition
   useEffect(() => {
@@ -98,19 +114,7 @@ export function useCategoryForm(categoryId?: string) {
     }
   };
 
-  // Gestion de l'upload d'image
-  const handleImageUpload = (url: string) => {
-    setFormData(prev => ({ ...prev, imageUrl: url }));
-    // Effacer l'erreur d'image s'il y en a une
-    if (errors.imageUrl) {
-      setErrors(prev => ({ ...prev, imageUrl: "" }));
-    }
-  };
 
-  // Gestion de la suppression d'image
-  const handleImageRemove = () => {
-    setFormData(prev => ({ ...prev, imageUrl: "" }));
-  };
 
   // Validation du formulaire
   const validateForm = (): boolean => {
