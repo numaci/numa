@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
+    "postinstall": "prisma generate",
     "lint": "next lint",
     "seed": "npx tsc scripts/seed-data.ts --outDir scripts --target es2020 --module commonjs --esModuleInterop && node scripts/seed-data.js",
-    "check-data": "npx tsc scripts/check-data.ts --outDir scripts --target es2020 --module commonjs --esModuleInterop && node scripts/check-data.js"
+    "check-data": "npx tsc scripts/check-data.ts --outDir scripts --target es2020 --module commonjs --esModuleInterop && node scripts/check-data.js",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",

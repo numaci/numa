@@ -34,6 +34,12 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             >
               📧 Demandes de réinitialisation
             </Link>
+            <Link 
+              href="/admin/users/new" 
+              className="admin-button-primary"
+            >
+              ➕ Ajouter un administrateur
+            </Link>
 
           </div>
         </div>
