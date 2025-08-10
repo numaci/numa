@@ -6,7 +6,7 @@ import Image from "next/image"; // 📸 1. Import de next/image
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/hooks/useCart";
 import { useSession } from "next-auth/react";
-import { FaShoppingCart, FaCheck, FaWhatsapp, FaStar, FaTruck, FaShieldAlt } from "react-icons/fa";
+import { FaCheck, FaWhatsapp, FaStar, FaTruck, FaShieldAlt } from "react-icons/fa";
 import { useShippingConfig } from "@/hooks/useShippingConfig";
 import ShareButtonClient from "@/app/(client)/products/[slug]/ShareButtonClient";
 import { useCartDrawer } from "@/contexts/CartDrawerContext";
@@ -121,7 +121,7 @@ export default function ProductDetailInfo({ product }: ProductDetailInfoProps) {
   };
 
   return (
-    <div className="space-y-6 pb-24 md:pb-0">
+    <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-semibold text-black tracking-tight mb-2">{product.name}</h1>
           <p className="text-gray-500">
@@ -194,33 +194,16 @@ export default function ProductDetailInfo({ product }: ProductDetailInfoProps) {
             </div>
           )}
 
-          {/* Actions desktop/tablette */}
-          <div className="hidden md:block space-y-3">
-            <Button variant="secondary" size="lg" className="w-full" disabled={isOutOfStock || isLoading || isSizeSelectionRequired} onClick={handleAddToCart}>
-              {isLoading ? 'Ajout en cours...' : showSuccess ? 'Ajouté !' : 'Ajouter au panier'}
-            </Button>
-            <Button variant="outline" size="lg" className="w-full" onClick={handleWhatsAppOrder} disabled={isSizeSelectionRequired}>
-              <FaWhatsapp className="mr-2" />
-              Commander sur WhatsApp
-            </Button>
-          </div>
+                    <Button variant="secondary" size="lg" className="w-full" disabled={isOutOfStock || isLoading || isSizeSelectionRequired} onClick={handleAddToCart}>
+            {isLoading ? 'Ajout en cours...' : showSuccess ? 'Ajouté !' : 'Ajouter au panier'}
+          </Button>
+          
+          <Button variant="outline" size="lg" className="w-full" onClick={handleWhatsAppOrder} disabled={isSizeSelectionRequired}>
+            <FaWhatsapp className="mr-2" />
+            Commander sur WhatsApp
+          </Button>
 
           {error && <p className="text-red-600 text-sm text-center">{error}</p>}
-        </div>
-
-        {/* Barre d'action mobile fixe en bas */}
-        <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200">
-          <div className="px-4 py-3">
-            <button
-              onClick={handleAddToCart}
-              disabled={isOutOfStock || isLoading || isSizeSelectionRequired}
-              aria-label="Commander"
-              className="w-full h-14 inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FaShoppingCart className="text-lg" />
-              <span>Commander</span>
-            </button>
-          </div>
         </div>
     </div>
   );
