@@ -4,6 +4,10 @@ import ProductSelectorGrid from "./ProductSelectorGrid";
 
 const PLACEHOLDER = "/placeholder.png";
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const runtime = 'nodejs'
+
 export default async function NewHomeSectionPage() {
   // Récupérer tous les produits actifs pour la sélection, avec leur catégorie
   const products = await prisma.product.findMany({

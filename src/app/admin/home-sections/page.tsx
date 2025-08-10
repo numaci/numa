@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+// This admin page queries the DB; avoid static export.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const runtime = 'nodejs'
+
 export default async function HomeSectionsAdminPage() {
   // Récupérer toutes les sections d'accueil avec leurs produits
   const sections = await prisma.homeSection.findMany({
