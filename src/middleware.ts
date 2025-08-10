@@ -15,9 +15,15 @@ export default withAuth(
       return NextResponse.next();
     }
 
-    // Si c'est une route admin et que l'utilisateur n'est pas admin
+    // Si c'est une route admin et que l'utilisateur n'est pas connecté
+    if (isAdminRoute && !token) {
+      const loginUrl = new URL("/admin/login", req.url);
+      loginUrl.searchParams.set("error", "signin");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Si connecté mais pas ADMIN
     if (isAdminRoute && token?.role !== "ADMIN") {
-      // Redirection vers la page de connexion avec un message d'erreur
       const loginUrl = new URL("/admin/login", req.url);
       loginUrl.searchParams.set("error", "unauthorized");
       return NextResponse.redirect(loginUrl);
@@ -28,8 +34,8 @@ export default withAuth(
   {
     // Configuration du middleware
     callbacks: {
-      // Autoriser l'accès si l'utilisateur est authentifié
-      authorized: ({ token }) => !!token,
+      // Laisser passer, la logique de redirection est gérée ci-dessus
+      authorized: () => true,
     },
   }
 );
@@ -38,4 +44,4 @@ export default withAuth(
 export const config = {
   // Protection de toutes les routes commençant par /admin sauf /admin/login et /admin/setup
   matcher: ["/admin/:path((?!login|setup).*)"],
-}; 
+};
