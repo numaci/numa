@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = 'force-dynamic';
+
 import { useCart } from "@/hooks/useCart";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,10 +25,10 @@ export default function CartPage() {
     removeFromCart,
     updateQuantity,
     clearCart,
-    getTotalPrice,
+    totalPrice,
   } = useCart();
   
-  const subtotal = getTotalPrice();
+  const subtotal = totalPrice;
   const shipping = subtotal >= SHIPPING_THRESHOLD || subtotal === 0 ? 0 : SHIPPING_FEE;
   const total = subtotal + shipping;
   const savings = items.reduce((sum, item) => {

@@ -2,9 +2,7 @@
 const nextConfig = {
   // images config consolidated below
   // Désactive le cache du build pour éviter les problèmes de cache
-  experimental: {
-    serverActions: true,
-  },
+  // experimental options cleaned (serverActions removed for Next 15)
   // Optimisation des images
   images: {
     formats: ['image/avif', 'image/webp'],
