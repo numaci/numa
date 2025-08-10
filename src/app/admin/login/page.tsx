@@ -14,7 +14,7 @@ export default function AdminLoginPage() {
 
   // Redirection si déjà connecté
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && (session as any)?.user?.role === "ADMIN") {
       window.location.href = "/admin/dashboard";
     }
   }, [status]);
