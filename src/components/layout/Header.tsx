@@ -150,7 +150,6 @@ const session: Session | null = null;
               <Link href="/categories" className="block py-3 px-4 hover:bg-gray-100 text-black font-medium tracking-tight transition-all duration-300" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
               
               <Link href="/cart" className="block py-3 px-4 hover:bg-gray-100 text-black font-medium tracking-tight transition-all duration-300" onClick={() => setIsMobileMenuOpen(false)}>Panier</Link>
-              <Link href="/admin" className="block py-3 px-4 hover:bg-gray-100 text-black font-medium tracking-tight transition-all duration-300" onClick={() => setIsMobileMenuOpen(false)}>Admin</Link>
               
             </nav>
           </div>
