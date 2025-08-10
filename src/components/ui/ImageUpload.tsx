@@ -15,7 +15,7 @@ interface ImageUploadProps {
 export function ImageUpload({
   onUpload,
   value,
-  folder = "/",
+  folder = "uploads",
   className
 }: ImageUploadProps) {
   const [progress, setProgress] = useState(0);
@@ -48,16 +48,15 @@ export function ImageUpload({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Upload failed');
+        const errorData = await response.json().catch(() => ({} as any));
+        throw new Error(errorData.error || errorData.message || 'Upload failed');
       }
 
       const uploadResponse = await response.json();
       console.log("Upload response:", uploadResponse);
 
-      if (uploadResponse.filePath) {
-        onUpload(uploadResponse.filePath);
-      }
+      const url: string | undefined = Array.isArray(uploadResponse?.urls) ? uploadResponse.urls[0] : uploadResponse?.filePath
+      if (url) onUpload(url)
     } catch (error) {
       console.error("Upload error:", error);
       alert("Erreur lors du téléversement: " + (error as Error).message);
@@ -73,8 +72,20 @@ export function ImageUpload({
     }
   };
 
-  const handleRemove = () => {
-    onUpload("");
+  const handleRemove = async () => {
+    const url = value
+    onUpload("")
+    if (!url) return
+    try {
+      await fetch('/api/upload/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+    } catch (e) {
+      // silent fail, UI already cleared
+      console.error('Delete failed', e)
+    }
   };
 
   return (
@@ -82,7 +93,7 @@ export function ImageUpload({
       {value ? (
         <div className="relative">
           <img
-            src={`${process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}${value}`}
+            src={value}
             alt="Uploaded image"
             className="w-full h-48 object-cover rounded-lg"
           />
@@ -114,7 +125,7 @@ export function ImageUpload({
               {isUploading ? "Téléversement..." : "Choisir une image"}
             </Button>
             <p className="text-sm text-gray-500 mt-2">
-              PNG, JPG, GIF jusqu'à 10MB
+              PNG, JPG, WEBP, GIF, AVIF jusqu'à 15MB
             </p>
             {isUploading && (
               <div className="mt-4">

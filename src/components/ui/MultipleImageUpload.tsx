@@ -1,15 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Upload, X, Image as ImageIcon, AlertCircle, Plus } from 'lucide-react'
+import { X, Plus, AlertCircle, Image as ImageIcon } from 'lucide-react'
 import { Button } from './Button'
-import {
-  upload as imagekitUpload,
-  ImageKitAbortError,
-  ImageKitInvalidRequestError,
-  ImageKitServerError,
-  ImageKitUploadNetworkError,
-} from "@imagekit/next";
 
 interface MultipleImageUploadProps {
   onImagesChange: (urls: string[], publicIds: string[]) => void
@@ -36,6 +29,7 @@ export function MultipleImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback(async (file: File) => {
+
     // Validation du type de fichier
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
     if (!allowedTypes.includes(file.type)) {
@@ -49,7 +43,6 @@ export function MultipleImageUpload({
       return
     }
 
-    // Validation du nombre d'images
     if (images.length >= maxImages) {
       setError(`Nombre maximum d'images atteint (${maxImages})`)
       return
@@ -59,42 +52,32 @@ export function MultipleImageUpload({
     setError(null)
 
     try {
-      // 1. Récupérer les paramètres d'authentification ImageKit
-      const res = await fetch('/api/upload-auth');
-      if (!res.ok) throw new Error("Erreur d'authentification ImageKit");
-      const { signature, expire, token, publicKey } = await res.json();
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', folder)
 
-      // 2. Uploader le fichier avec le SDK ImageKit
-      const uploadResponse = await imagekitUpload({
-        file,
-        fileName: file.name,
-        token,
-        signature,
-        expire,
-        publicKey,
-        folder,
-        onProgress: (event) => {},
-      });
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
-      // Ajouter la nouvelle image
-      const newImages = [...images, uploadResponse.url]
-      const newPublicIds = [...publicIds, uploadResponse.fileId || uploadResponse.fileId || ""]
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || "Erreur lors de l'upload")
+      }
+
+      const data = await res.json()
+      const url: string | undefined = Array.isArray(data?.urls) ? data.urls[0] : data?.filePath
+      if (!url) throw new Error("Réponse d'upload invalide")
+
+      const newImages = [...images, url]
+      const newPublicIds = [...publicIds, url]
       setImages(newImages)
       setPublicIds(newPublicIds)
       onImagesChange(newImages, newPublicIds)
 
-    } catch (error) {
-      if (error instanceof ImageKitAbortError) {
-        setError("Upload annulé")
-      } else if (error instanceof ImageKitInvalidRequestError) {
-        setError("Requête non valide")
-      } else if (error instanceof ImageKitUploadNetworkError) {
-        setError("Erreur réseau")
-      } else if (error instanceof ImageKitServerError) {
-        setError("Erreur serveur")
-      } else {
-        setError(error instanceof Error ? error.message : 'Erreur lors de l\'upload')
-      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur lors de l'upload")
     } finally {
       setIsUploading(false)
     }
@@ -127,13 +110,25 @@ export function MultipleImageUpload({
     }
   }, [handleFile])
 
-  const handleRemoveImage = useCallback((index: number) => {
-    const newImages = images.filter((_, i) => i !== index)
-    const newPublicIds = publicIds.filter((_, i) => i !== index)
-    
-    setImages(newImages)
-    setPublicIds(newPublicIds)
-    onImagesChange(newImages, newPublicIds)
+  const handleRemoveImage = useCallback(async (index: number) => {
+    const url = images[index]
+    try {
+      // Optimistic UI: retirer d'abord
+      const newImages = images.filter((_, i) => i !== index)
+      const newPublicIds = publicIds.filter((_, i) => i !== index)
+      setImages(newImages)
+      setPublicIds(newPublicIds)
+      onImagesChange(newImages, newPublicIds)
+
+      // Puis supprimer côté storage
+      await fetch('/api/upload/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur lors de la suppression")
+    }
   }, [images, publicIds, onImagesChange])
 
   return (

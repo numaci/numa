@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { unlink } from 'fs/promises';
-import path from 'path';
 import { prisma } from '@/lib/prisma';
+import { getSupabaseServer } from '@/lib/supabaseServer'
 
 export async function DELETE(
   req: Request,
@@ -23,14 +22,21 @@ export async function DELETE(
       return new NextResponse('Ad not found', { status: 404 });
     }
 
-    // 2. Supprimer le fichier image du serveur
+    // 2. Supprimer le fichier image du stockage Supabase si c'est une URL publique Supabase
     if (ad.imageUrl) {
-      const imagePath = path.join(process.cwd(), 'public', ad.imageUrl);
       try {
-        await unlink(imagePath);
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+        const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || 'images'
+        const prefix = `${supabaseUrl}/storage/v1/object/public/${bucket}/`
+        if (ad.imageUrl.startsWith(prefix)) {
+          const path = ad.imageUrl.replace(prefix, '')
+          const { error } = await getSupabaseServer().storage.from(bucket).remove([path])
+          if (error) {
+            console.error('[AD_DELETE] supabase remove error', error.message)
+          }
+        }
       } catch (fileError) {
-        console.error(`Failed to delete image file: ${imagePath}`, fileError);
-        // On ne bloque pas la suppression de l'entrée DB même si le fichier n'existe pas
+        console.error('[AD_DELETE] file cleanup error', fileError)
       }
     }
 

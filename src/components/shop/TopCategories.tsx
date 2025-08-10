@@ -51,6 +51,7 @@ export default function TopCategories({ categories }: TopCategoriesProps) {
                     src={category.imageUrl}
                     alt={category.name}
                     fill
+                    unoptimized
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   />
@@ -99,6 +100,7 @@ export default function TopCategories({ categories }: TopCategoriesProps) {
                     src={category.imageUrl}
                     alt={category.name}
                     fill
+                    unoptimized
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   />

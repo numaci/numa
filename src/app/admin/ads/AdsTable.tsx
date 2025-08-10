@@ -34,11 +34,12 @@ export default function AdsTable({ ads, onDelete }: AdsTableProps) {
               <td className="px-6 py-4 whitespace-nowrap">
                 {ad.imageUrl ? (
                   <Image
-                    src={ad.imageUrl} // The path is relative to the `public` folder
+                    src={ad.imageUrl}
                     alt="Image de la publicité"
                     width={100}
                     height={50}
                     className="object-cover rounded-md"
+                    unoptimized
                   />
                 ) : (
                   <span className="text-gray-400">Pas d'image</span>

@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import AdsTable from './AdsTable';
 import { Ad } from '@prisma/client';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 
 export default function AdsPage() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [file, setFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [link, setLink] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,28 +36,18 @@ export default function AdsPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      toast.error('Veuillez sélectionner une image.');
+    if (!imageUrl) {
+      toast.error('Veuillez téléverser une image.');
       return;
     }
 
     setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('imageUrl', file);
-    formData.append('link', link);
 
     try {
-      await axios.post('/api/ads', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await axios.post('/api/ads', { imageUrl, link });
       toast.success('Publicité ajoutée avec succès!');
-      setFile(null);
+      setImageUrl("");
       setLink('');
-      // Clear file input
-      const fileInput = document.getElementById('file-input') as HTMLInputElement;
-      if(fileInput) fileInput.value = '';
       fetchAds(); // Refresh the list
     } catch (error) {
       toast.error("Erreur lors de l'ajout de la publicité.");
@@ -85,13 +76,11 @@ export default function AdsPage() {
         <h3 className="text-lg font-semibold mb-4">Ajouter une nouvelle publicité</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="file-input" className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-            <Input
-              id="file-input"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+            <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <ImageUpload
+              onUpload={(url) => setImageUrl(url)}
+              value={imageUrl}
+              folder="ads"
             />
           </div>
           <div>
