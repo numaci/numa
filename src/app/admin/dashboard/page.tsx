@@ -4,6 +4,11 @@ import DashboardHeader from "@/app/admin/dashboard/DashboardHeader";
 import RecentOrders from "@/app/admin/dashboard/RecentOrders";
 import LowStockProducts from "@/app/admin/dashboard/LowStockProducts";
 
+// Force dynamic rendering and Node.js runtime for Prisma
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const runtime = "nodejs";
+
 // Interface TypeScript pour les statistiques du dashboard
 // Définit la structure des données retournées par getDashboardStats()
 interface RecentOrder {
