@@ -8,15 +8,24 @@ export const metadata: Metadata = {
   description: 'Gérez les demandes de réinitialisation de mot de passe des clients NUMA'
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ResetRequestsPage() {
   // Récupérer toutes les demandes en attente
-  const requests = await prisma.passwordResetRequest.findMany({
-    where: { status: "pending" },
-    orderBy: { createdAt: "asc" },
-    include: {
-      user: true,
-    },
-  });
+  let requests: any[] = [];
+  try {
+    requests = await prisma.passwordResetRequest.findMany({
+      where: { status: "pending" },
+      orderBy: { createdAt: "asc" },
+      include: {
+        user: true,
+      },
+    });
+  } catch (e) {
+    console.error('[admin/users/reset-requests] erreur récupération demandes:', e);
+    requests = [];
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

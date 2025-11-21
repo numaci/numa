@@ -1,6 +1,18 @@
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
-import { Product } from "@/types";
+
+// Minimal product type for this component
+type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  comparePrice?: number;
+  imageUrl?: string;
+  images?: string;
+  isActive: boolean;
+  stock: number;
+};
 
 interface SimilarProductsProps {
   products: Product[];
@@ -27,7 +39,7 @@ export default function SimilarProducts({ products, currentProductId }: SimilarP
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0 divide-x divide-y divide-gray-100">
         {filteredProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

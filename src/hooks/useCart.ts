@@ -10,6 +10,7 @@ export function useCart() {
   const addToCart = useCartStore((state) => state.addToCart);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const updateVariant = useCartStore((state) => state.updateVariant);
   const clearCart = useCartStore((state) => state.clearCart);
 
   const totalItems = useMemo(() => {
@@ -25,6 +26,7 @@ export function useCart() {
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateVariant,
     clearCart,
     isLoading: false, // No server interaction for cart
     error: null,      // No server interaction for cart

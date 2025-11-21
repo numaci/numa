@@ -5,6 +5,10 @@ import ProductGrid from "@/components/shop/ProductGrid";
 import CustomHorizontalScroll from "@/components/shop/CustomHorizontalScroll";
 import AdBannerCarousel from "@/components/shop/AdBannerCarousel";
 import Image from "next/image";
+
+// Eviter la pré-génération statique qui tente d'accéder à la DB pendant le build
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 // Définition locale du type Product pour correspondre aux objets transformés
 type Product = {
   id: string;
@@ -144,7 +148,6 @@ async function getProducts(searchParams: Promise<SearchParams>) {
   }
 
   try {
-    // Récupération des produits avec pagination
     const [rawProducts, totalProducts] = await Promise.all([
       prisma.product.findMany({
         where,
@@ -152,39 +155,28 @@ async function getProducts(searchParams: Promise<SearchParams>) {
         skip,
         take: limit,
         include: {
-          category: {
-            select: {
-              name: true,
-              slug: true,
-            },
-          },
-          variants: true, // Ajouté pour la compatibilité variantes
+          category: { select: { name: true, slug: true } },
+          variants: true,
         },
       }),
       prisma.product.count({ where }),
     ]);
 
-    // Conversion des objets Decimal en nombres et sécurisation de variants
     const products = rawProducts.map(p => {
-  const prod = transformProduct(p);
-  // Ensure imageUrl is a full URL or add base URL if needed
-  if (prod.imageUrl && !prod.imageUrl.startsWith('http')) {
-    prod.imageUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}${prod.imageUrl}` : prod.imageUrl;
-  }
-  return prod;
-});
+      const prod = transformProduct(p);
+      if (prod.imageUrl && !prod.imageUrl.startsWith('http')) {
+        prod.imageUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}${prod.imageUrl}` : prod.imageUrl;
+      }
+      return prod;
+    });
 
     const totalPages = Math.ceil(totalProducts / limit);
 
-    return {
-      products,
-      totalProducts,
-      totalPages,
-      currentPage: page,
-    };
+    return { products, totalProducts, totalPages, currentPage: page };
   } catch (error) {
     console.error("Erreur détaillée lors de la récupération des produits:", error);
-    throw new Error("Impossible de récupérer les produits");
+    // Ne pas faire échouer le build: retourner des valeurs par défaut
+    return { products: [], totalProducts: 0, totalPages: 1, currentPage: page };
   }
 }
 
@@ -194,14 +186,19 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  // Récupération des pubs actives, triées par date
-  const ads = await prisma.ad.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: "desc" },
-  });
+  // Récupération des pubs actives, triées par date (ne bloque pas en build)
+  let ads: Array<any> = [];
+  try {
+    ads = await prisma.ad.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } });
+  } catch (e) {
+    console.error('Erreur récupération pubs:', e);
+    ads = [];
+  }
 
-  // Filtrer les pubs avec une image valide
-  const adsWithImage = ads.filter(ad => ad.imageUrl && ad.imageUrl !== "");
+  // Filtrer les pubs avec une image valide et normaliser imageUrl en string
+  const adsWithImage = ads
+    .filter(ad => ad.imageUrl && ad.imageUrl !== "")
+    .map(ad => ({ ...ad, imageUrl: ad.imageUrl || "" }));
   // Slide par défaut si aucune pub avec image
   const defaultAd = [{
     id: "default",
@@ -215,42 +212,48 @@ export default async function ProductsPage({
   }];
 
   // Récupération des top catégories (avec le nombre de produits)
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      imageUrl: true,
-      description: true,
-      isPublic: true, // Added isPublic to select
-      _count: {
-        select: {
-          products: {
-            where: { isActive: true }
+  let categories: Array<{ id: string; name: string; slug: string; imageUrl: string | null; description: string | null; isPublic: boolean; _count: { products: number } }> = [];
+  try {
+    categories = await prisma.category.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        imageUrl: true,
+        description: true,
+        isPublic: true,
+        _count: {
+          select: {
+            products: { where: { isActive: true } }
           }
         }
-      }
-    },
-    take: 8, // Prendre plus pour avoir un choix
-  });
+      },
+      take: 8, // Prendre plus pour avoir un choix
+    });
+  } catch (e) {
+    console.error('Erreur récupération catégories:', e);
+    categories = [];
+  }
 
-  // Trier par nombre de produits décroissant
   categories.sort((a, b) => b._count.products - a._count.products);
 
   // Récupération des catégories publiques (isPublic)
   const publicCategories = categories.filter(cat => cat.isPublic);
 
   // Récupération du numéro WhatsApp depuis la config (table whatsappConfig)
-  const whatsappConfig = await prisma.whatsappConfig.findFirst({
-    where: { isActive: true, type: "order" },
-    orderBy: { createdAt: "desc" },
-  });
-  let whatsappNumber = whatsappConfig?.number?.replace(/\D/g, "") || "22300000000";
-  if (whatsappNumber.length <= 9 && !whatsappNumber.startsWith("223")) {
-    whatsappNumber = `223${whatsappNumber}`;
+  let whatsappConfig;
+  try {
+    whatsappConfig = await prisma.whatsappConfig.findFirst({
+      where: { isActive: true, type: "order" },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) {
+    console.error('Erreur récupération config WhatsApp:', e);
+    whatsappConfig = null;
   }
-  whatsappNumber = `+${whatsappNumber}`;
+  // Forcer le numéro WhatsApp spécifique demandé
+  let whatsappNumber = "002250700247693";
 
   const { products, totalProducts, totalPages, currentPage } = 
     await getProducts(searchParams);
@@ -262,13 +265,14 @@ export default async function ProductsPage({
       <main>
         {/* Grille des catégories publiques */}
         {publicCategories.length > 0 && (
-          <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-3 lg:gap-4">
+          <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-3 lg:gap-4 animate-slide-up">
             {/* Carte WhatsApp */}
+            {(() => { const waLinkNumber = whatsappNumber.replace(/[^0-9]/g, '').replace(/^00/, ''); return (
             <a
-              href={`https://wa.me/${whatsappNumber.replace('+','')}`}
+              href={`https://wa.me/${waLinkNumber}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white border border-green-100 flex flex-col items-stretch p-0 overflow-hidden group cursor-pointer hover:border-green-300 transition-all duration-300"
+              className="bg-white border border-green-100 flex flex-col items-stretch p-0 overflow-hidden group cursor-pointer hover:border-green-300 transition-all duration-300 animate-scale-in"
             >
               <div className="relative w-full aspect-square flex items-center justify-center bg-green-50">
                 <FaWhatsapp size={36} className="text-green-500" />
@@ -276,12 +280,12 @@ export default async function ProductsPage({
               <div className="w-full bg-white py-2 px-1 text-center">
                 <span className="text-green-700 font-medium text-[10px] truncate block w-full">Commande WhatsApp</span>
               </div>
-            </a>
+            </a>); })()}
             {publicCategories.map(cat => (
               <a
                 key={cat.id}
                 href={`/products/category/${cat.slug}`}
-                className="bg-white border border-gray-100 flex flex-col items-stretch p-0 overflow-hidden group cursor-pointer hover:border-gray-300 transition-all duration-300"
+                className="bg-white border border-gray-100 flex flex-col items-stretch p-0 overflow-hidden group cursor-pointer hover:border-gray-300 transition-all duration-300 animate-scale-in"
               >
                 <div className="relative w-full aspect-square">
                   {cat.imageUrl ? (
@@ -309,90 +313,98 @@ export default async function ProductsPage({
 
         {/* Sections d'accueil dynamiques (HomeSection) */}
         {await (async () => {
-          const homeSections = await prisma.homeSection.findMany({
-            where: { isActive: true },
-            orderBy: { order: "asc" },
-            include: {
-              products: {
-                include: { product: { include: { category: { select: { name: true, slug: true } } } } },
-                orderBy: { order: "asc" }
+          try {
+            const homeSections = await prisma.homeSection.findMany({
+              where: { isActive: true },
+              orderBy: { order: "asc" },
+              include: {
+                products: {
+                  include: { product: { include: { category: { select: { name: true, slug: true } } } } },
+                  orderBy: { order: "asc" }
+                }
               }
-            }
-          });
-          return homeSections.map(section => {
-            const products = section.products.map(sp => sp.product).filter(Boolean).map(transformProduct);
-            if (products.length === 0) return null;
-            const showVoirPlus = products.length > 10;
-            return (
-              <section key={section.id} className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100">
-                <div className="flex flex-row items-center justify-between mb-6 gap-2 w-full">
-                  <h2 className="flex-1 text-xl font-medium text-black mb-0 text-left tracking-tight">{section.title}</h2>
-                  <a href={`/home-section/${section.id}`} className="inline-block text-black text-sm font-medium px-4 py-1.5 border border-gray-200 hover:bg-gray-50 transition-all duration-300">
-                    Voir plus
-                  </a>
-                </div>
-                <CustomHorizontalScroll>
-                  <ProductGrid products={products.slice(0, 10)} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
-                </CustomHorizontalScroll>
-              </section>
-            );
-          });
+            });
+            return homeSections.map(section => {
+              const products = section.products.map(sp => sp.product).filter(Boolean).map(transformProduct);
+              if (products.length === 0) return null;
+              return (
+                <section key={section.id} className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100 animate-fade-in-up">
+                  <div className="flex flex-row items-center justify-between mb-6 gap-2 w-full animate-slide-up">
+                    <h2 className="flex-1 text-xl font-medium text-black mb-0 text-left tracking-tight">{section.title}</h2>
+                    <a href={`/home-section/${section.id}`} className="inline-block text-black text-sm font-medium px-4 py-1.5 border border-gray-200 hover:bg-gray-50 transition-all duration-300">
+                      Voir plus
+                    </a>
+                  </div>
+                  <CustomHorizontalScroll>
+                    <ProductGrid products={products.slice(0, 10)} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
+                  </CustomHorizontalScroll>
+                </section>
+              );
+            });
+          } catch (e) {
+            console.error('Erreur récupération sections accueil:', e);
+            return null;
+          }
         })()}
         {/* Section Les produits les plus vendus */}
         {await (async () => {
-          // Récupérer les 10 produits les plus vendus
-          const topSelling = await prisma.orderItem.groupBy({
-            by: ["productId"],
-            where: {
-              productId: { 
-                not: null 
-              },
-            },
-            _sum: { quantity: true },
-            orderBy: { _sum: { quantity: "desc" } },
-            take: 10,
-          });
-          // Récupérer les infos produits
-          const topSellingProductsRaw = await Promise.all(
-            topSelling.map(async (item) => {
-              const product = await prisma.product.findUnique({
-                where: { id: item.productId },
-                include: { category: { select: { name: true, slug: true } } },
-              });
-              return product ? transformProduct(product) : null;
-            })
-          );
-          const topSellingProducts = topSellingProductsRaw.filter(Boolean).map(transformProduct);
-          return topSellingProducts.length > 0 ? (
-            <section className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100">
-              <div className="flex items-center justify-start mb-6 gap-2">
-                <h2 className="text-xl font-medium text-black mb-0 text-left tracking-tight">Les produits les plus vendus</h2>
-              </div>
-              <CustomHorizontalScroll>
-                <ProductGrid products={topSellingProducts} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
-              </CustomHorizontalScroll>
-            </section>
-          ) : null;
+          try {
+            const topSelling = await prisma.orderItem.groupBy({
+              by: ["productId"],
+              where: { productId: { not: null } },
+              _sum: { quantity: true },
+              orderBy: { _sum: { quantity: "desc" } },
+              take: 10,
+            });
+            const topSellingProductsRaw = await Promise.all(
+              topSelling.map(async (item) => {
+                const product = await prisma.product.findUnique({
+                  where: { id: item.productId },
+                  include: { category: { select: { name: true, slug: true } } },
+                });
+                return product ? transformProduct(product) : null;
+              })
+            );
+            const topSellingProducts = topSellingProductsRaw.filter(Boolean) as any[];
+            return topSellingProducts.length > 0 ? (
+              <section className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100 animate-fade-in-up">
+                <div className="flex items-center justify-start mb-6 gap-2">
+                  <h2 className="text-xl font-medium text-black mb-0 text-left tracking-tight">Les produits les plus vendus</h2>
+                </div>
+                <CustomHorizontalScroll>
+                  <ProductGrid products={topSellingProducts as any} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
+                </CustomHorizontalScroll>
+              </section>
+            ) : null;
+          } catch (e) {
+            console.error('Erreur récupération top ventes:', e);
+            return null;
+          }
         })()}
         {/* Section Produits de santé */}
         {await (async () => {
-          const healthProducts = await prisma.product.findMany({
-            where: { isActive: true, isHealth: true },
-            orderBy: { createdAt: "desc" },
-            take: 10,
-            include: { category: { select: { name: true, slug: true } } },
-          });
-          const healthProductsTransformed = healthProducts.map(transformProduct);
-          return healthProductsTransformed.length > 0 ? (
-            <section className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100">
-              <div className="flex items-center justify-start mb-6 gap-2">
-                <h2 className="text-xl font-medium text-black mb-0 text-left tracking-tight">Produits de santé</h2>
-              </div>
-              <CustomHorizontalScroll>
-                <ProductGrid products={healthProductsTransformed} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
-              </CustomHorizontalScroll>
-            </section>
-          ) : null;
+          try {
+            const healthProducts = await prisma.product.findMany({
+              where: { isActive: true, isHealth: true },
+              orderBy: { createdAt: "desc" },
+              take: 10,
+              include: { category: { select: { name: true, slug: true } } },
+            });
+            const healthProductsTransformed = healthProducts.map(transformProduct);
+            return healthProductsTransformed.length > 0 ? (
+              <section className="max-w-7xl mx-auto px-4 py-10 my-6 bg-white border-t border-b border-gray-100 animate-fade-in-up">
+                <div className="flex items-center justify-start mb-6 gap-2">
+                  <h2 className="text-xl font-medium text-black mb-0 text-left tracking-tight">Produits de santé</h2>
+                </div>
+                <CustomHorizontalScroll>
+                  <ProductGrid products={healthProductsTransformed} hideCartActions={true} smallCard={true} horizontalOnMobile={true} />
+                </CustomHorizontalScroll>
+              </section>
+            ) : null;
+          } catch (e) {
+            console.error('Erreur récupération produits santé:', e);
+            return null;
+          }
         })()}
         <ProductsLayout
           products={products}

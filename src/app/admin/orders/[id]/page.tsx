@@ -12,11 +12,12 @@ interface OrderDetailsPageProps {
 }
 
 const safeJsonParse = (str: string | null) => {
-  if (!str) return null;
+  if (!str) return { raw: '' } as const;
   try {
-    return JSON.parse(str);
+    const parsed = JSON.parse(str);
+    return { isParsed: true, data: parsed } as const;
   } catch (e) {
-    return { raw: str };
+    return { raw: str } as const;
   }
 };
 
@@ -39,6 +40,7 @@ async function getOrderDetails(orderId: string): Promise<Order | null> {
               id: true,
               name: true,
               images: true,
+              imageUrl: true,
               stock: true,
               sku: true,
             },
@@ -67,19 +69,40 @@ async function getOrderDetails(orderId: string): Promise<Order | null> {
     },
     orderItems: order.orderItems
       .filter(item => item.product)
-      .map(item => ({
-        id: item.id,
-        quantity: item.quantity,
-        price: item.price.toNumber(),
-        product: {
-          id: item.product!.id,
-          name: item.product!.name,
-          imageUrl: item.product!.images?.[0] || null,
-          sku: item.product!.sku,
-          stock: item.product!.stock,
-        },
-      })),
-    shippingAddress: safeJsonParse(order.shippingAddress),
+      .map(item => {
+        // Safely parse images JSON string into array if possible
+        let parsedImages: string[] = []
+        const rawImages = item.product!.images as unknown as string | null
+        if (rawImages) {
+          try {
+            const arr = JSON.parse(rawImages)
+            if (Array.isArray(arr)) parsedImages = arr.filter(Boolean)
+          } catch {/* ignore */}
+        }
+        const primaryImage = item.product!.imageUrl || parsedImages[0] || null
+        return ({
+          id: item.id,
+          quantity: item.quantity,
+          price: item.price.toNumber(),
+          product: {
+            id: item.product!.id,
+            name: item.product!.name,
+            imageUrl: primaryImage,
+            sku: item.product!.sku,
+            stock: item.product!.stock,
+          },
+        })
+      }),
+    shippingAddress: (() => {
+      const v = safeJsonParse(order.shippingAddress);
+      if (v && 'isParsed' in v && v.isParsed) {
+        const data = { ...v.data } as any;
+        // Normalize: ensure 'address' exists for UI; alias from 'street'
+        if (!data.address && data.street) data.address = data.street;
+        return { isParsed: true, data } as const;
+      }
+      return v;
+    })(),
     deliveryZone: safeJsonParse(order.deliveryZone),
     paymentInfo: safeJsonParse(order.paymentInfo),
   };

@@ -17,13 +17,21 @@ export default function CheckoutPage() {
     fullName: '',
     phone: '+225',
     address: '',
+    email: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [hasPrefilledEmail, setHasPrefilledEmail] = useState(false);
 
   useEffect(() => {
     if (session?.user?.name) {
       setFormData((prev) => ({ ...prev, fullName: session.user.name || '' }));
+    }
+    if (session?.user?.email) {
+      setFormData((prev) => ({ ...prev, email: session.user?.email || '' }));
+      setHasPrefilledEmail(true);
+    } else {
+      setHasPrefilledEmail(false);
     }
   }, [session]);
 
@@ -37,9 +45,22 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Si l'utilisateur n'est pas connecté, on redirige vers /login
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
     if (!formData.fullName || !formData.phone || !formData.address) {
       setError('Veuillez remplir tous les champs.');
       return;
+    }
+    // Si l'email n'est pas prérempli depuis la session, l'utilisateur doit le saisir
+    if (!hasPrefilledEmail) {
+      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!formData.email || !emailRegex.test(formData.email)) {
+        setError("Veuillez saisir un email valide pour recevoir la confirmation de commande.");
+        return;
+      }
     }
     if (formData.phone.length < 13) { // +225 XX XX XX XX
         setError('Le numéro de téléphone semble invalide.');
@@ -58,7 +79,9 @@ export default function CheckoutPage() {
       });
 
       if (!response.ok) {
-        throw new Error('La création de la commande a échoué.');
+        // Essayer de récupérer le message d'erreur depuis la réponse
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'La création de la commande a échoué.');
       }
 
       clearCart();
@@ -94,6 +117,24 @@ export default function CheckoutPage() {
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-black transition-all"
                   required
                 />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-lg font-medium text-gray-800 mb-2">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={`w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-black transition-all ${hasPrefilledEmail ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="votre@email.com"
+                  required={!hasPrefilledEmail}
+                  readOnly={hasPrefilledEmail}
+                />
+                {!hasPrefilledEmail && (
+                  <p className="mt-2 text-sm text-gray-600">Saisissez votre email pour recevoir la confirmation de commande.</p>
+                )}
               </div>
 
               <div>

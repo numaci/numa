@@ -111,7 +111,7 @@ export default function ProductGrid({
         className={
           horizontalOnMobile
             ? "flex gap-3 sm:gap-2 items-stretch sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 overflow-x-auto scrollbar-hide"
-            : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-3"
+            : "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-0 items-stretch divide-x divide-y divide-gray-100"
         }
         style={horizontalOnMobile ? { WebkitOverflowScrolling: 'touch' } : { overflowY: 'visible', maxHeight: 'none' }}
       >
@@ -119,16 +119,18 @@ export default function ProductGrid({
           <div
             key={product.id}
             className={
-              smallCard
-                ? horizontalOnMobile
-                  ? "w-36 max-w-[9.5rem] h-full sm:w-56 sm:max-w-[14rem] sm:h-64 sm:max-h-[18rem] lg:w-64 lg:max-w-[18rem] lg:h-72"
-                  : "w-full max-w-xs sm:w-48 sm:max-w-[12rem]"
-                : ""
+              (horizontalOnMobile ? 'shrink-0 ' : '') + (
+                smallCard
+                  ? horizontalOnMobile
+                    ? "w-36 max-w-[9.5rem] h-auto sm:w-56 sm:max-w-[14rem] sm:h-auto lg:w-64 lg:max-w-[18rem] lg:h-auto"
+                    : "w-full max-w-xs sm:w-48 sm:max-w-[12rem] h-auto"
+                  : "h-full"
+              )
             }
+            style={{ display: 'flex' }}
           >
             <ProductCard
               product={product}
-              onAddToCart={hideCartActions ? undefined : handleAddToCart}
               hideCartActions={hideCartActions}
               smallCard={smallCard}
               bestMode={smallCard && hideCartActions && horizontalOnMobile}

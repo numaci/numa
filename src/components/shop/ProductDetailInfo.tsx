@@ -34,19 +34,6 @@ interface ProductDetailInfoProps {
       name: string;
       slug: string;
     };
-    reviews: Array<{
-      rating: number;
-      title?: string;
-      comment?: string;
-      createdAt: Date;
-      user: {
-        firstName?: string;
-        lastName?: string;
-      };
-    }>;
-    _count: {
-      reviews: number;
-    };
     attributes?: Record<string, unknown>;
     variants?: Array<{ id: string; name: string; value: string; price: number; stock: number }>;
   };
@@ -57,6 +44,12 @@ export default function ProductDetailInfo({ product }: ProductDetailInfoProps) {
   const { addToCart, isLoading, error } = useCart();
   const { config, loading } = useShippingConfig();
   const { openCart } = useCartDrawer();
+
+  // Format prix en FCFA sans doublon
+  const formatFcfa = (value: unknown) => {
+    const num = Number(value || 0);
+    return `${new Intl.NumberFormat('fr-FR').format(num)} FCFA`;
+  };
 
 
 
@@ -79,9 +72,7 @@ export default function ProductDetailInfo({ product }: ProductDetailInfoProps) {
   // 📏 2. Vérifier si une taille doit être sélectionnée mais ne l'est pas
   const isSizeSelectionRequired = hasVariants && selectedVariant === null;
 
-  const averageRating = product.reviews.length > 0
-    ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
-    : 0;
+  // Reviews supprimés - plus de calcul de rating
 
   // --- Event Handlers ---
   const handleAddToCart = async () => {
@@ -95,6 +86,18 @@ export default function ProductDetailInfo({ product }: ProductDetailInfoProps) {
           price: displayPrice,
           imageUrl: product.imageUrl,
           stock: currentStock,
+          // variant metadata for cart editing
+          variantId: selectedVariant ? String(selectedVariant.id) : undefined,
+          variantName: product.variants?.[0]?.name || "Taille",
+          variantValue: selectedVariant ? selectedVariant.value : undefined,
+          availableVariants: (product.variants || []).map((v) => ({
+            id: String(v.id),
+            value: v.value,
+            name: v.name,
+            price: Number(v.price),
+            stock: Number(v.stock),
+          })),
+          comparePrice: product.comparePrice ?? undefined,
         },
         quantity
       );
@@ -133,20 +136,13 @@ export default function ProductDetailInfo({ product }: ProductDetailInfoProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          <span className="text-4xl font-semibold text-black">{formatCurrency(displayPrice)}</span>
+          <span className="text-4xl font-semibold text-black">{formatFcfa(displayPrice)}</span>
           {displayComparePrice && displayComparePrice > displayPrice && (
-            <span className="text-xl text-gray-400 line-through">{formatCurrency(displayComparePrice)}</span>
+            <span className="text-xl text-gray-400 line-through">{formatFcfa(displayComparePrice)}</span>
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <FaStar key={star} className={`text-lg ${star <= averageRating ? "text-black" : "text-gray-300"}`} />
-            ))}
-          </div>
-          <span className="text-sm text-gray-500">{averageRating.toFixed(1)} ({product._count.reviews} avis)</span>
-        </div>
+        {/* Section avis supprimée */}
 
         <div className="text-sm">
           {isOutOfStock ? (

@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import type { Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { createOrUpdateContact, sendOrderConfirmationEmail } from '@/lib/brevo'
+import { BRAND } from '@/config/brand'
 import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
 
 // Ensure Node.js runtime (not Edge) so process.env is available
 export const runtime = 'nodejs'
@@ -10,17 +13,15 @@ export const runtime = 'nodejs'
 // Create an order from checkout
 export async function POST(req: Request) {
   try {
+    // Session facultative: commande invité autorisée
     const session = (await getServerSession(authOptions as any)) as Session | null
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-    }
 
     const body = await req.json().catch(() => null) as any
     if (!body) {
       return NextResponse.json({ error: 'Corps de requête manquant' }, { status: 400 })
     }
 
-    const { fullName, phone, address, items, totalPrice } = body
+    const { fullName, phone, address, items, totalPrice, email } = body
     if (!fullName || !phone || !address || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Champs manquants ou invalides' }, { status: 400 })
     }
@@ -46,10 +47,101 @@ export async function POST(req: Request) {
       clientPhone: phone,
     }
 
-    const order = await prisma.order.create({
-      data: {
+    // Determine target user: session user or fallback guest user
+    let userConnect: { connect: { id: string } } | undefined
+    if (session?.user?.id) {
+      userConnect = { connect: { id: session.user.id } }
+    } else {
+      const guestEmail = process.env.GUEST_EMAIL || 'guest@numa.local'
+      const guestPhone = process.env.GUEST_PHONE || null
+      const guestFirstName = 'Guest'
+      const guestLastName = 'Checkout'
+      const passwordHash = await bcrypt.hash('guest-disabled-login', 10)
+      const guest = await prisma.user.upsert({
+        where: { email: guestEmail },
+        update: {},
+        create: {
+          email: guestEmail,
+          phone: guestPhone ?? undefined,
+          password: passwordHash,
+          firstName: guestFirstName,
+          lastName: guestLastName,
+          role: 'USER',
+        },
+      })
+      userConnect = { connect: { id: guest.id } }
+    }
+
+    // Vérifier le stock avant de créer la commande
+    for (const item of items) {
+      const quantity = Number(item.quantity || 1)
+      const productId = item.productId
+
+      if (!productId) {
+        continue // Skip items without productId
+      }
+
+      // Si l'item a un variantId, vérifier le stock du variant
+      if (item.variantId) {
+        const variant = await prisma.productVariant.findUnique({
+          where: { id: item.variantId },
+          include: { product: true },
+        })
+
+        if (!variant) {
+          return NextResponse.json(
+            { error: `Variant introuvable pour le produit "${item.name || 'Produit'}"` },
+            { status: 400 }
+          )
+        }
+
+        if (variant.stock < quantity) {
+          return NextResponse.json(
+            { error: `Stock insuffisant pour "${item.name || variant.product.name}". Stock disponible: ${variant.stock}, Quantité demandée: ${quantity}` },
+            { status: 400 }
+          )
+        }
+
+        if (variant.stock === 0) {
+          return NextResponse.json(
+            { error: `Le produit "${item.name || variant.product.name}" (${variant.value || variant.name}) n'est plus en stock` },
+            { status: 400 }
+          )
+        }
+      } else {
+        // Sinon, vérifier le stock du produit principal
+        const product = await prisma.product.findUnique({
+          where: { id: productId },
+        })
+
+        if (!product) {
+          return NextResponse.json(
+            { error: `Produit "${item.name || 'Produit'}" introuvable` },
+            { status: 400 }
+          )
+        }
+
+        if (product.stock < quantity) {
+          return NextResponse.json(
+            { error: `Stock insuffisant pour "${item.name || product.name}". Stock disponible: ${product.stock}, Quantité demandée: ${quantity}` },
+            { status: 400 }
+          )
+        }
+
+        if (product.stock === 0) {
+          return NextResponse.json(
+            { error: `Le produit "${item.name || product.name}" n'est plus en stock` },
+            { status: 400 }
+          )
+        }
+      }
+    }
+
+    // Utiliser une transaction pour créer la commande et déduire le stock
+    const order = await prisma.$transaction(async (tx) => {
+      // Créer la commande
+      const data: any = {
         orderNumber,
-        userId: session.user.id,
         total: totalPrice,
         shippingAddress: JSON.stringify(shippingAddress),
         deliveryZone: JSON.stringify(deliveryZone),
@@ -63,8 +155,49 @@ export async function POST(req: Request) {
             sku: it.sku || null,
           })),
         },
-      },
-      include: { orderItems: true },
+      }
+      if (userConnect) {
+        data.user = userConnect
+      }
+
+      const newOrder = await tx.order.create({
+        data,
+        include: { orderItems: true },
+      })
+
+      // Déduire le stock après création de la commande
+      for (const item of items) {
+        const quantity = Number(item.quantity || 1)
+        const productId = item.productId
+
+        if (!productId) {
+          continue
+        }
+
+        // Si l'item a un variantId, déduire le stock du variant
+        if (item.variantId) {
+          await tx.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: {
+                decrement: quantity,
+              },
+            },
+          })
+        } else {
+          // Sinon, déduire le stock du produit principal
+          await tx.product.update({
+            where: { id: productId },
+            data: {
+              stock: {
+                decrement: quantity,
+              },
+            },
+          })
+        }
+      }
+
+      return newOrder
     })
 
     // Attempt to send notification email via Brevo (non-blocking)
@@ -156,6 +289,36 @@ export async function POST(req: Request) {
         }
       } catch (e) {
         console.error('[COMMANDE_EMAIL] send error', e)
+      }
+    })()
+
+    // Send confirmation to customer + ensure Brevo contact (non-blocking)
+    ;(async () => {
+      try {
+        const customerEmail: string | undefined = email || (session?.user as any)?.email || undefined
+        if (!customerEmail) return
+        // Ensure contact exists in Brevo (uses updateEnabled)
+        await createOrUpdateContact(customerEmail, fullName?.split(' ')[0], fullName?.split(' ').slice(1).join(' '))
+        // Send a detailed order confirmation email
+        const safeItems = Array.isArray(items) ? items : []
+        const mappedItems = safeItems.map((it: any) => ({
+          name: String(it.name || 'Produit'),
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+          imageUrl: it.imageUrl || undefined,
+          sku: it.sku || undefined,
+          size: it.pointure ?? it.size ?? it.selectedSize ?? it.variant?.value ?? it.variant ?? it.selectedVariant ?? it.option?.value ?? undefined,
+        }))
+        await sendOrderConfirmationEmail({
+          email: customerEmail,
+          fullName,
+          orderNumber: order.orderNumber,
+          totalPrice: Number(totalPrice || 0),
+          items: mappedItems,
+          address,
+        })
+      } catch (e) {
+        console.warn('[COMMANDE_CLIENT_EMAIL] error', e)
       }
     })()
 

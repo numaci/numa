@@ -30,7 +30,7 @@ interface Product {
   isFeatured: boolean;
   imageUrl: string | null;
   images: string | null;
-  variants?: { name: string; value: string }[];
+  variants?: { name: string; value: string; price?: number; stock?: number }[];
   shippingPrice?: number | null;
 }
 
@@ -49,7 +49,7 @@ interface ProductFormData {
   isActive: boolean;
   isFeatured: boolean;
   isBest: boolean;
-  variants: { name: string; value: string; price: string }[];
+  variants: { name: string; value: string; price: string; stock: number }[];
 }
 
 // Page de modification d'un produit
@@ -144,10 +144,11 @@ export default function EditProductPage() {
         isFeatured: product.isFeatured,
         isBest: (product as any).isBest || false,
         variants: Array.isArray(product.variants)
-          ? product.variants.map(v => ({
+          ? product.variants.map((v: any) => ({
               name: v.name,
               value: v.value,
-              price: (v as any).price?.toString() || ""
+              price: (v.price ?? "").toString(),
+              stock: Number(v.stock ?? 0),
             }))
           : [],
       });
@@ -201,6 +202,8 @@ export default function EditProductPage() {
 
     if (!formData.name.trim()) {
       newErrors.name = "Le nom du produit est requis";
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = "Le nom doit contenir au moins 3 caractères";
     }
 
     if (!formData.categoryId) {
@@ -209,17 +212,24 @@ export default function EditProductPage() {
 
     if (!formData.description.trim()) {
       newErrors.description = "La description est requise";
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = "La description doit contenir au moins 10 caractères";
     }
 
     if (!formData.imageUrl) {
       newErrors.imageUrl = "L'image principale est requise";
+    } else if (typeof formData.imageUrl === 'string' && !/^https?:\/\//.test(formData.imageUrl)) {
+      // validation légère côté client
+      newErrors.imageUrl = "URL d'image invalide";
     }
 
-    if (!formData.stock || parseInt(formData.stock) < 0) {
+    const stockVal = parseInt(formData.stock as any);
+    if (isNaN(stockVal) || stockVal < 0) {
       newErrors.stock = "Le stock doit être supérieur ou égal à 0";
     }
 
-    if (!formData.price || parseFloat(formData.price) <= 0) {
+    const priceVal = parseFloat(formData.price as any);
+    if (isNaN(priceVal) || priceVal <= 0) {
       newErrors.price = "Le prix doit être supérieur à 0";
     }
 
@@ -307,11 +317,11 @@ export default function EditProductPage() {
   };
 
   // Pour la gestion des variantes :
-  const [variant, setVariant] = useState({ name: "", value: "", price: "" });
+  const [variant, setVariant] = useState({ name: "", value: "", price: "", stock: 0 });
   const handleAddVariant = () => {
     if (!variant.name || !variant.value || !variant.price) return;
     setFormData(prev => ({ ...prev, variants: [...prev.variants, { ...variant }] }));
-    setVariant({ name: "", value: "", price: "" });
+    setVariant({ name: "", value: "", price: "", stock: 0 });
   };
   const handleRemoveVariant = (idx: number) => {
     setFormData(prev => ({ ...prev, variants: prev.variants.filter((_, i) => i !== idx) }));
@@ -324,13 +334,13 @@ export default function EditProductPage() {
       return;
     }
     try {
+      setSaving(true);
       // On ne garde que les URLs valides (http) pour l'API
       const filteredImages = Array.isArray(formData.images) ? formData.images.filter((i): i is string => typeof i === 'string' && i.startsWith('http')) : [];
+
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           slug: formData.name.toLowerCase().replace(/[éèê]/g, "e").replace(/[àâ]/g, "a").replace(/[ùû]/g, "u").replace(/[ôö]/g, "o").replace(/[îï]/g, "i").replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim(),
@@ -338,13 +348,37 @@ export default function EditProductPage() {
           comparePrice: formData.comparePrice ? parseFloat(formData.comparePrice) : null,
           stock: parseInt(formData.stock),
           shippingPrice: formData.shippingPrice ? parseFloat(formData.shippingPrice.toString()) : null,
-          variants: formData.variants,
+          variants: (Array.isArray(formData.variants) ? formData.variants : []).map(v => ({
+            name: v.name,
+            value: v.value,
+            price: parseFloat(v.price || "0"),
+            stock: Number((v as any).stock ?? 0),
+          })),
           images: filteredImages,
         }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
-        setApiError(errorData.error || "Erreur lors de la mise à jour du produit");
+        // Nettoyage des erreurs précédentes
+        setErrors({});
+        // Si l'API renvoie des issues Zod
+        if (Array.isArray(errorData.error)) {
+          // Construire un mapping champ -> message court
+          const fieldErrors: Record<string, string> = {};
+          for (const issue of errorData.error) {
+            const path = Array.isArray(issue.path) && issue.path.length > 0 ? String(issue.path[0]) : 'global';
+            const message: string = typeof issue.message === 'string' ? issue.message : 'Champ invalide';
+            if (!fieldErrors[path]) fieldErrors[path] = message;
+          }
+          setErrors(fieldErrors);
+          const firstMsg = Object.values(fieldErrors)[0] || "Certains champs sont invalides";
+          setApiError(firstMsg);
+        } else if (typeof errorData.error === 'string') {
+          setApiError(errorData.error);
+        } else {
+          setApiError("Erreur lors de la mise à jour du produit");
+        }
         return;
       }
       router.push("/admin/products");
@@ -405,6 +439,12 @@ export default function EditProductPage() {
             </div>
           </div>
         </div>
+
+        {apiError && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm">
+            {apiError}
+          </div>
+        )}
 
         {/* Formulaire */}
         <form onSubmit={handleSubmit} className="space-y-10">
@@ -518,25 +558,88 @@ export default function EditProductPage() {
                   {errors.comparePrice && <p className="mt-1 text-sm text-red-600">{errors.comparePrice}</p>}
                 </div>
               </div>
-              {/* Variantes */}
+              {/* Variantes - Sélection de tailles (comme la page de création) */}
               <div className="md:col-span-2">
-                <label className="block text-base font-bold text-orange-700 mb-2">Variantes (option, valeur, prix)</label>
-                <div className="flex flex-col md:flex-row gap-2 mb-2">
-                  <input type="text" placeholder="Option (ex: Capacité, Taille)" value={variant.name} onChange={e => setVariant({ ...variant, name: e.target.value })} className="border-2 border-orange-200 rounded-xl p-2 flex-1 bg-white text-orange-900 shadow" />
-                  <input type="text" placeholder="Valeur (ex: 128Go, XL)" value={variant.value} onChange={e => setVariant({ ...variant, value: e.target.value })} className="border-2 border-orange-200 rounded-xl p-2 flex-1 bg-white text-orange-900 shadow" />
-                  <input type="number" placeholder="Prix (FCFA)" value={variant.price} onChange={e => setVariant({ ...variant, price: e.target.value })} className="border-2 border-orange-200 rounded-xl p-2 w-28 bg-white text-orange-900 shadow" min="0" />
-                  <button type="button" onClick={handleAddVariant} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow transition flex items-center gap-1"><span>+</span> Ajouter</button>
+                <label className="block text-base font-bold text-orange-700 mb-3">Tailles disponibles</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {['XS','S','M','L','XL','XXL','38','39','40','41','42','43','44','45','46'].map((size) => {
+                    const sizeVariant = Array.isArray(formData.variants) ? formData.variants.find((v: any) => v.value === size) : undefined;
+                    const isSelected = !!sizeVariant;
+                    return (
+                      <div key={size} className="border border-orange-200 rounded-xl p-3 bg-white shadow-sm">
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFormData((prev: any) => ({
+                                    ...prev,
+                                    variants: [
+                                      ...(Array.isArray(prev.variants) ? prev.variants : []),
+                                      { name: 'Taille', value: size, price: (prev.price || '0').toString(), stock: 0 }
+                                    ]
+                                  }));
+                                } else {
+                                  setFormData((prev: any) => ({
+                                    ...prev,
+                                    variants: (Array.isArray(prev.variants) ? prev.variants : []).filter((v: any) => v.value !== size)
+                                  }));
+                                }
+                              }}
+                              className="w-4 h-4 text-orange-600 border-orange-300 rounded focus:ring-orange-400 focus:ring-2"
+                            />
+                            <span className="font-semibold text-orange-900">{size}</span>
+                          </label>
+                        </div>
+
+                        {isSelected && (
+                          <div className="space-y-2">
+                            <div>
+                              <label className="block text-xs text-orange-700 mb-1">Stock</label>
+                              <input
+                                type="number"
+                                min="0"
+                                value={(sizeVariant as any)?.stock ?? 0}
+                                onChange={(e) => {
+                                  const newStock = parseInt(e.target.value) || 0;
+                                  setFormData((prev: any) => ({
+                                    ...prev,
+                                    variants: (Array.isArray(prev.variants) ? prev.variants : []).map((v: any) =>
+                                      v.value === size ? { ...v, stock: newStock } : v
+                                    )
+                                  }));
+                                }}
+                                className="w-full px-2 py-1 text-sm border border-orange-200 rounded focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-orange-700 mb-1">Prix (FCFA)</label>
+                              <input
+                                type="number"
+                                min="0"
+                                value={(sizeVariant as any)?.price || (formData.price || '0')}
+                                onChange={(e) => {
+                                  const newPrice = (parseFloat(e.target.value) || 0).toString();
+                                  setFormData((prev: any) => ({
+                                    ...prev,
+                                    variants: (Array.isArray(prev.variants) ? prev.variants : []).map((v: any) =>
+                                      v.value === size ? { ...v, price: newPrice } : v
+                                    )
+                                  }));
+                                }}
+                                className="w-full px-2 py-1 text-sm border border-orange-200 rounded focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                                placeholder={(formData.price as any)?.toString?.() || '0'}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-                {formData.variants.length > 0 && (
-                  <ul className="flex flex-wrap gap-2 mb-2">
-                    {formData.variants.map((v, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-sm mb-1 bg-orange-100 rounded-full px-4 py-1 shadow border border-orange-200">
-                        <span className="font-semibold text-orange-900">{v.name}:</span> <span>{v.value}</span> <span className="text-orange-700">{v.price} FCFA</span>
-                        <button type="button" onClick={() => handleRemoveVariant(idx)} className="text-red-500 hover:underline ml-2">Supprimer</button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </div>
           </div>

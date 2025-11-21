@@ -68,30 +68,31 @@ export default function ProductDetailImages({ product }: ProductDetailImagesProp
           src={allImages[selectedImageIndex]}
           alt={`${product.name} - Image ${selectedImageIndex + 1}`}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer md:cursor-default"
           sizes="(max-width: 768px) 100vw, 50vw"
+          onClick={() => setIsModalOpen(true)}
         />
         
-        {/* Bouton zoom */}
+        {/* Bouton zoom - visible seulement sur desktop */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
+          className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100 hidden md:block"
         >
           <FaExpand size={16} />
         </button>
 
-        {/* Boutons navigation */}
+        {/* Boutons navigation - visibles seulement sur desktop */}
         {allImages.length > 1 && (
           <>
             <button
               onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100 hidden md:block"
             >
               <FaChevronLeft size={16} />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2 rounded-full shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100 hidden md:block"
             >
               <FaChevronRight size={16} />
             </button>

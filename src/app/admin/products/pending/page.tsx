@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { Product, Supplier } from '@prisma/client';
 import ProductValidationCard from './ProductValidationCard';
 
 export const dynamic = 'force-dynamic';

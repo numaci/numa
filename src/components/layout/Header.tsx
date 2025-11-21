@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/Button";
-import { FaShoppingBag, FaUser, FaThLarge, FaClipboardList, FaBars, FaTimes } from "react-icons/fa";
+import { FaShoppingBag, FaUser, FaThLarge } from "react-icons/fa";
 import { useCart } from "@/hooks/useCart";
 import CartDropdown from "./CartDropdown";
 
@@ -15,18 +16,8 @@ import { useCartDrawer } from "@/contexts/CartDrawerContext";
 // Composant Header pour la partie client
 // Inclut la navigation et les actions utilisateur (recherche supprimée)
 export default function Header() {
-  // Auth supprimé, remplacer par faux status pour test UI sans compte
-// Pour le développement, simulez le statut d'authentification :
-const status: "authenticated" | "unauthenticated" = "unauthenticated";
-type Session = {
-  user: {
-    name?: string;
-    email?: string;
-    // Ajoutez d'autres propriétés utilisateur ici si besoin
-  };
-  // Ajoutez d'autres propriétés de session ici si besoin
-};
-const session: Session | null = null;
+  // Statut d'authentification NextAuth
+  const { status, data: session } = useSession();
   const router = useRouter();
   
   
@@ -112,27 +103,51 @@ const session: Session | null = null;
   }, [session?.user]);
 
   
+  // Icône menu style "=" (deux traits)
+  const MenuEqualIcon = ({ size = 18, className = "" }: { size?: number; className?: string }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <rect x="3" y="7" width="18" height="2" fill="currentColor" />
+      <rect x="3" y="15" width="18" height="2" fill="currentColor" />
+    </svg>
+  );
+
   // Header mobile minimaliste et luxueux
   const MobileJumiaHeader = () => (
     <div className="md:hidden fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-md border-b border-gray-200">
       <div className="flex items-center justify-between px-4 py-3">
-        {/* Menu burger */}
-        <button className="p-2 transition-all duration-300 hover:bg-gray-100 rounded-full" aria-label="Menu" onClick={() => setIsMobileMenuOpen(true)}>
-          <FaBars size={18} className="text-black" />
-        </button>
-        {/* Logo */}
+        {/* Logo à gauche */}
         <Link href="/" className="flex items-center gap-1">
           <span className="font-semibold text-xl text-black tracking-tight">NUMA</span>
         </Link>
-        {/* Icône panier mobile avec badge */}
-        <button onClick={openCart} className="relative p-2 transition-all duration-300 hover:bg-gray-100 rounded-full" aria-label="Panier">
-          <FaShoppingBag size={18} className="text-black" />
-          {isClient && cartCount > 0 && (
-            <span className="absolute -top-2 -right-1 bg-black text-white text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-              {cartCount}
-            </span>
-          )}
-        </button>
+        {/* Actions à droite: compte, panier, menu (==) */}
+        <div className="flex items-center gap-2">
+          <Link
+            href={status === "authenticated" ? "/profile" : "/login"}
+            className="relative p-2 transition-all duration-300 hover:bg-gray-100 rounded-full"
+            aria-label="Compte"
+          >
+            <FaUser size={18} className="text-black" />
+          </Link>
+          <button onClick={openCart} className="relative p-2 transition-all duration-300 hover:bg-gray-100 rounded-full" aria-label="Panier">
+            <FaShoppingBag size={18} className="text-black" />
+            {isClient && cartCount > 0 && (
+              <span className="absolute -top-2 -right-1 bg-black text-white text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                {cartCount}
+              </span>
+            )}
+          </button>
+          {/* Menu égal "=" à la fin */}
+          <button className="p-2 transition-all duration-300 hover:bg-gray-100 rounded-full" aria-label="Menu" onClick={() => setIsMobileMenuOpen(true)}>
+            <MenuEqualIcon size={18} className="text-black" />
+          </button>
+        </div>
       </div>
       {/* Menu latéral mobile */}
       {isMobileMenuOpen && (
@@ -140,7 +155,7 @@ const session: Session | null = null;
           {/* Overlay */}
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
           {/* Drawer */}
-          <div ref={mobileMenuRef} className="relative w-72 max-w-full h-full bg-white text-black shadow-lg flex flex-col animate-slide-in-left">
+          <div ref={mobileMenuRef} className="absolute right-0 top-0 w-72 max-w-full h-full bg-white text-black shadow-lg flex flex-col animate-slide-in-right">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <span className="text-xl font-semibold tracking-tight">NUMA</span>
               <button onClick={() => setIsMobileMenuOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 hover:text-black text-2xl transition-all duration-300">×</button>
@@ -149,6 +164,7 @@ const session: Session | null = null;
               <Link href="/" className="block py-3 px-4 hover:bg-gray-100 text-black font-medium tracking-tight transition-all duration-300" onClick={() => setIsMobileMenuOpen(false)}>Accueil</Link>
               <Link href="/categories" className="block py-3 px-4 hover:bg-gray-100 text-black font-medium tracking-tight transition-all duration-300" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
               
+              <Link href={status === "authenticated" ? "/profile" : "/login"} className="block py-3 px-4 hover:bg-gray-100 text-black font-medium tracking-tight transition-all duration-300" onClick={() => setIsMobileMenuOpen(false)}>Mon compte</Link>
               <Link href="/cart" className="block py-3 px-4 hover:bg-gray-100 text-black font-medium tracking-tight transition-all duration-300" onClick={() => setIsMobileMenuOpen(false)}>Panier</Link>
               
             </nav>
@@ -213,10 +229,19 @@ const session: Session | null = null;
 
               {/* Actions utilisateur */}
               <div className="flex items-center gap-6">
-                
-                
-                
-                
+                {/* Compte */}
+                <div className="relative">
+                  <Link
+                    href={status === "authenticated" ? "/profile" : "/login"}
+                    className="relative p-3 hover:bg-white/5 transition-all duration-300 group"
+                    aria-label="Compte"
+                  >
+                    <FaUser size={18} />
+                    <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">
+                      Mon compte
+                    </span>
+                  </Link>
+                </div>
                 {/* Panier */}
                 <div className="relative">
                   <button
@@ -282,6 +307,7 @@ const session: Session | null = null;
                             <Link
                               key={cat.id}
                               href={`/products/category/${cat.slug}`}
+                              prefetch={true}
                               className="flex items-center gap-4 px-5 py-4 hover:bg-gray-light/20 transition-all duration-300 group"
                               onClick={() => setIsCategoryOpen(false)}
                             >
@@ -321,6 +347,7 @@ const session: Session | null = null;
                 </Link>
                 <Link 
                   href="/products" 
+                  prefetch={true}
                   className="font-medium tracking-tight hover:text-gray-light transition-all duration-300 relative group"
                 >
                   Boutique

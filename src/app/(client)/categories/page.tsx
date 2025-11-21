@@ -2,18 +2,27 @@ import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function CategoriesPage() {
   // Récupérer les catégories actives avec leur image
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      imageUrl: true,
-    },
-    orderBy: { name: "asc" },
-  });
+  let categories: { id: string; name: string; slug: string; imageUrl: string | null }[] = [];
+  try {
+    categories = await prisma.category.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        imageUrl: true,
+      },
+      orderBy: { name: "asc" },
+    });
+  } catch (e) {
+    console.error('(client)/categories - erreur récupération catégories:', e);
+    categories = [];
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import UserProfileMenu from "@/app/admin/login/UserProfileMenu";
 import Image from "next/image";
-import { FiBell, FiSearch, FiMenu } from "react-icons/fi";
+import { FiSearch, FiMenu } from "react-icons/fi";
 import { FaUserShield } from "react-icons/fa";
 
 interface AdminHeaderProps {
@@ -65,9 +65,6 @@ const AdminHeader = ({ onBurgerClick }: AdminHeaderProps) => {
           <span className="text-lg font-semibold text-black tracking-tight antialiased">Admin</span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="admin-button-secondary p-3 rounded-xl hover:scale-105">
-            <FiBell size={20} />
-          </button>
           <div className="relative" ref={avatarRef}>
             <button
               className="admin-button-secondary p-2 rounded-xl hover:scale-105"
@@ -101,10 +98,6 @@ const AdminHeader = ({ onBurgerClick }: AdminHeaderProps) => {
        
         {/* Actions utilisateur */}
         <div className="flex items-center gap-4 min-w-[160px] justify-end">
-          <button className="relative admin-button-secondary p-3 rounded-xl hover:scale-105">
-            <FiBell size={22} />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow"></span>
-          </button>
           <div className="relative" ref={avatarRef}>
             <button
               className="relative admin-button-secondary p-3 rounded-xl hover:scale-105"

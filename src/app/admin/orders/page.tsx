@@ -65,7 +65,7 @@ async function getOrders(searchParams: OrdersPageProps["searchParams"]) {
           comparePrice: null,
           stock: 0,
           sku: 'DELETED',
-          imageUrl: '/images/placeholder.png',
+          imageUrl: '/placeholder.png',
           images: '[]',
           isFeatured: false,
           isActive: false,

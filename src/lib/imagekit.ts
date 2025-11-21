@@ -1,24 +1,28 @@
 import ImageKit from "imagekit";
 
-if (
-  !process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY ||
-  !process.env.IMAGEKIT_PRIVATE_KEY ||
-  !process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT
-) {
-  throw new Error("ImageKit environment variables are not set. Please check your .env.local file.");
-}
+const hasImagekitEnv = Boolean(
+  process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY &&
+  process.env.IMAGEKIT_PRIVATE_KEY &&
+  process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT
+);
 
-export const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT,
-});
+// N'initialise pas si les variables ne sont pas présentes pour éviter les erreurs au build
+export const imagekit: ImageKit | null = hasImagekitEnv
+  ? new ImageKit({
+      publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY as string,
+      privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
+      urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT as string,
+    })
+  : null;
 
 export async function uploadToImageKit(buffer: Buffer, fileName: string, folder: string = "receipts") {
+  if (!imagekit) {
+    throw new Error("ImageKit n'est pas configuré. Définissez NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY et NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT.");
+  }
   return imagekit.upload({
     file: buffer,
     fileName,
     folder,
     useUniqueFileName: true,
   });
-} 
+}

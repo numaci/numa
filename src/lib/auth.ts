@@ -39,7 +39,8 @@ export const authOptions: NextAuthOptions = {
           if (isEmail) {
             user = await prisma.user.findUnique({ where: { email: credentials.emailOrPhone } });
           } else if (isPhone) {
-            user = await prisma.user.findFirst({ where: { phone: credentials.emailOrPhone.replace(/\s/g, "") } });
+            const cleanPhone = credentials.emailOrPhone.replace(/\s/g, "");
+            user = await prisma.user.findFirst({ where: { phone: cleanPhone } });
           }
 
           if (!user) {
@@ -117,8 +118,8 @@ export const authOptions: NextAuthOptions = {
 
   // Configuration des pages personnalisées
   pages: {
-    signIn: "/admin/login", // Page de connexion personnalisée
-    error: "/admin/login", // Page d'erreur
+    signIn: "/login", // Page de connexion personnalisée
+    error: "/login", // Page d'erreur
   },
 
   // Configuration de sécurité

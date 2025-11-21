@@ -7,6 +7,8 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
+    const isCheckoutRoute = req.nextUrl.pathname.startsWith("/checkout");
+    const isAdminRoot = req.nextUrl.pathname === "/admin";
     const isLoginPage = req.nextUrl.pathname === "/admin/login";
     const isSetupPage = req.nextUrl.pathname === "/admin/setup";
     
@@ -28,7 +30,31 @@ export default withAuth(
       loginUrl.searchParams.set("error", "unauthorized");
       return NextResponse.redirect(loginUrl);
     }
-    
+
+    // Si on visite /admin directement, router vers le dashboard ou la page de login
+    if (isAdminRoot) {
+      if (token?.role === "ADMIN") {
+        const adminDashboardUrl = new URL("/admin/dashboard", req.url);
+        return NextResponse.redirect(adminDashboardUrl);
+      }
+      const adminLoginUrl = new URL("/admin/login", req.url);
+      return NextResponse.redirect(adminLoginUrl);
+    }
+
+    // Si un ADMIN est connecté et visite des pages publiques, rediriger vers le dashboard admin
+    const isPublicLanding = req.nextUrl.pathname === "/" || req.nextUrl.pathname === "/login";
+    if (token && token.role === "ADMIN" && isPublicLanding) {
+      const adminUrl = new URL("/admin/dashboard", req.url);
+      return NextResponse.redirect(adminUrl);
+    }
+
+    // Protéger la caisse /checkout pour les utilisateurs non connectés
+    if (isCheckoutRoute && !token) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("from", "checkout");
+      return NextResponse.redirect(loginUrl);
+    }
+
     return NextResponse.next();
   },
   {
@@ -43,5 +69,9 @@ export default withAuth(
 // Configuration des routes à protéger
 export const config = {
   // Protection de toutes les routes commençant par /admin sauf /admin/login et /admin/setup
-  matcher: ["/admin/:path((?!login|setup).*)"],
+  matcher: [
+    "/admin",
+    "/admin/:path((?!login|setup).*)",
+    "/checkout",
+  ],
 };

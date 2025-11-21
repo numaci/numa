@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from 'react';
-import { Product} from '@prisma/client';
 import { Button } from '@/components/ui/Button';
 import type { Product } from "@/types/admin";
+import Link from "next/link";
 
 export default function ProductValidationCard({ product }: { product: Product }) {
   const [showRefuse, setShowRefuse] = useState(false);
@@ -58,6 +58,12 @@ export default function ProductValidationCard({ product }: { product: Product })
           <button onClick={handleValidate} disabled={loading} className="admin-button admin-button-primary disabled:opacity-50">
             {loading ? 'Validation...' : 'Valider'}
           </button>
+          <Link
+            href={`/admin/products/${product.id}/edit`}
+            className="admin-button admin-button-secondary inline-flex items-center justify-center"
+          >
+            Modifier
+          </Link>
           <button onClick={() => setShowRefuse((v) => !v)} className="admin-button admin-button-secondary">
             Refuser
           </button>

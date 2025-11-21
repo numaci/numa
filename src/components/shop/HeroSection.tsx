@@ -16,7 +16,7 @@ export default function HeroSection() {
             Livraison rapide et service client exceptionnel.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-start">
-            <Link href="/products">
+            <Link href="/products" prefetch={true}>
               <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100">
                 🛍️ Voir tous les produits
               </Button>

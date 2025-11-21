@@ -11,7 +11,6 @@ interface CartDropdownProps {
   onClose: () => void;
 }
 
-const FREE_SHIPPING_THRESHOLD = 500;
 const CURRENCY = 'XOF';
 
 function formatFCFA(amount: number) {
@@ -25,6 +24,7 @@ export default function CartDropdown({ open, onClose }: CartDropdownProps) {
     items, 
     removeFromCart, 
     updateQuantity, 
+    updateVariant,
     totalPrice,
     isLoading
   } = useCart();
@@ -64,9 +64,6 @@ export default function CartDropdown({ open, onClose }: CartDropdownProps) {
 
   if (!open) return null;
 
-  const missing = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
-  const progress = Math.min(1, total / FREE_SHIPPING_THRESHOLD);
-
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       {/* Overlay */}
@@ -91,22 +88,7 @@ export default function CartDropdown({ open, onClose }: CartDropdownProps) {
           </div>
         )}
 
-        {/* Free shipping progress */}
-        <div className="px-8 pt-6">
-          {missing > 0 ? (
-            <div className="text-sm mb-3">
-              Il vous manque <span className="font-semibold">{formatFCFA(missing)}</span> pour avoir la <span className="font-semibold">livraison gratuite</span>.
-            </div>
-          ) : (
-            <div className="text-sm text-black mb-3 font-semibold">Vous avez la livraison gratuite !</div>
-          )}
-          <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden mb-6">
-            <div
-              className="h-1 bg-black rounded-full transition-all duration-500"
-              style={{ width: `${progress * 100}%` }}
-            />
-          </div>
-        </div>
+        {/* Free shipping section removed as per request */}
 
         {/* Cart items */}
         <div className="flex-1 overflow-y-auto px-8">
@@ -138,6 +120,24 @@ export default function CartDropdown({ open, onClose }: CartDropdownProps) {
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-lg font-semibold">{formatFCFA(item.price)}</span>
                     </div>
+                    {/* Size selector in drawer */}
+                    {Array.isArray((item as any).availableVariants) && (item as any).availableVariants.length > 0 && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <label className="text-xs text-gray-500">{(item as any).variantName || 'Taille'}:</label>
+                        <select
+                          className="border border-gray-300 rounded px-2 py-1 text-xs bg-white"
+                          value={(item as any).variantId || ''}
+                          onChange={(e) => updateVariant(item.productId, e.target.value)}
+                          disabled={isLoading}
+                        >
+                          {(item as any).availableVariants.map((v: any) => (
+                            <option key={v.id} value={v.id} disabled={v.stock === 0}>
+                              {v.value}{v.stock === 0 ? ' — indisponible' : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     {/* Quantity selector */}
                     <div className="flex items-center gap-3 mt-3">
                       <button

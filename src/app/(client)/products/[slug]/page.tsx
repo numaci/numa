@@ -35,19 +35,7 @@ type ProductDetail = {
     name: string;
     slug: string;
   };
-  reviews: Array<{
-    rating: number;
-    title?: string;
-    comment?: string;
-    createdAt: string;
-    user: {
-      firstName?: string;
-      lastName?: string;
-    };
-  }>;
-  _count: {
-    reviews: number;
-  };
+  // Reviews supprimés du type
   attributes?: Record<string, unknown>;
   variants?: Array<{ id: string; name: string; value: string; price: number }>;
 };
@@ -64,13 +52,7 @@ function transformProduct(product: any): ProductDetail {
     images: product.images as string | null,
     createdAt: product.createdAt?.toString() ?? "",
     updatedAt: product.updatedAt?.toString() ?? "",
-    reviews: product.reviews
-      ? (product.reviews as Array<unknown>).map((r: any) => ({
-          ...r,
-          createdAt: r.createdAt ? r.createdAt.toString() : "",
-        }))
-      : [],
-    _count: product._count ? { reviews: product._count.reviews } : { reviews: 0 },
+    // Reviews supprimés de la transformation
     attributes: product.attributes as Record<string, unknown> ?? {},
     variants: product.variants
       ? (product.variants as Array<unknown>).map((v: any) => ({
@@ -103,25 +85,7 @@ async function getProductBySlug(slug: string) {
             slug: true,
           },
         },
-        reviews: {
-          select: {
-            rating: true,
-            title: true,
-            comment: true,
-            createdAt: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        },
-        _count: {
-          select: {
-            reviews: true,
-          },
-        },
+        // Reviews supprimés
         variants: true, // <-- Ajout pour charger les variantes
       },
     });
@@ -231,6 +195,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 ...p,
                 comparePrice: p.comparePrice ?? undefined,
                 imageUrl: p.imageUrl ?? undefined,
+                images: p.images ?? undefined,
               }))}
               currentProductId={product.id}
             />

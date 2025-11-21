@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import ProductGrid from "@/components/shop/ProductGrid";
 
+// Empêche la pré-génération statique qui provoquerait un accès DB au build
+export const dynamic = 'force-dynamic';
+
 // Fonction pour convertir les objets Decimal en nombres
 function transformProduct(product: Record<string, unknown>) {
   return {
@@ -11,16 +14,23 @@ function transformProduct(product: Record<string, unknown>) {
 }
 
 export default async function BestProductsPage() {
-  // Récupérer tous les produits isBest=true, paginés (par 24)
-  const bestProducts = await prisma.product.findMany({
-    where: { isActive: true, isBest: true },
-    orderBy: { createdAt: "desc" },
-    include: {
-      category: { select: { name: true, slug: true } },
-    },
-    take: 100, // Afficher jusqu'à 100, ajuster si besoin
-  });
-  const bestProductsTransformed = bestProducts.map(transformProduct);
+  // Récupérer tous les produits isBest=true
+  let bestProductsTransformed: any[] = [];
+  try {
+    const bestProducts = await prisma.product.findMany({
+      where: { isActive: true, isBest: true },
+      orderBy: { createdAt: "desc" },
+      include: {
+        category: { select: { name: true, slug: true } },
+      },
+      take: 100,
+    });
+    bestProductsTransformed = bestProducts.map(transformProduct);
+  } catch (e) {
+    // En build/export, ignorer les erreurs DB et afficher une page vide
+    console.error('Erreur de récupération des best products:', e);
+    bestProductsTransformed = [];
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8">

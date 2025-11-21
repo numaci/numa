@@ -16,7 +16,14 @@ export type OrderStatus =
 export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED';
 
 // Type pour les champs JSON qui peuvent être mal formés
-export type ParsedJson<T> = T | { raw: string };
+// Supporte trois formes:
+// 1) Valeur parsée directe T
+// 2) Valeur parsée encapsulée { isParsed: true, data: T }
+// 3) Donnée brute non parsée { raw: string }
+export type ParsedJson<T> =
+  | T
+  | { isParsed: true; data: T }
+  | { raw: string };
 
 // --- Interfaces pour les données parsées et sérialisées (utilisées côté client) ---
 

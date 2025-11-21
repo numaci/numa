@@ -7,12 +7,14 @@ import { CartDrawerProvider } from "@/contexts/CartDrawerContext";
 // On importe le composant client qui affiche le CartDrawer
 import ClientDrawerRoot from "@/components/layout/ClientDrawerRoot";
 import WhatsappButtonDynamic from "@/components/layout/WhatsappButtonDynamic";
+import NewsletterModal from "@/components/layout/NewsletterModal";
 
 export default function ClientRootLayout({ children }: { children: ReactNode }) {
   return (
     <>
 
       <WhatsappButtonDynamic />
+      <NewsletterModal />
       <CartDrawerProvider>
         <ClientTransitionWrapper>
           <ClientLayout>{children}</ClientLayout>

@@ -108,19 +108,38 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onDelete }) => {
                       {order.user.firstName} {order.user.lastName}
                     </div>
                     <div className="text-sm text-gray-500 antialiased">
-                      {order.user.email || order.user.phone}
+                      {order.user.email || '-'}
                     </div>
                   </div>
                 </div>
               </td>
               <td className="px-6 py-4">
-                <div className="space-y-1">
-                  {order.orderItems.slice(0, 2).map((item: any) => (
-                    <div key={item.id} className="text-sm text-gray-900 antialiased">
-                      <span className="font-medium">{item.name}</span>
-                      <span className="text-gray-500 ml-1">(×{item.quantity})</span>
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  {order.orderItems.slice(0, 2).map((item: any) => {
+                    // Determine thumbnail from product.imageUrl or first from product.images (JSON string)
+                    let thumb: string | null = item.product?.imageUrl || null;
+                    if (!thumb && item.product?.images) {
+                      try {
+                        const arr = JSON.parse(item.product.images);
+                        if (Array.isArray(arr) && arr.length > 0) thumb = arr[0];
+                      } catch {}
+                    }
+                    thumb = thumb || '/placeholder.png';
+
+                    return (
+                      <div key={item.id} className="flex items-center gap-3 text-sm text-gray-900 antialiased">
+                        <img
+                          src={thumb}
+                          alt={item.name}
+                          className="h-8 w-8 rounded object-cover border border-gray-200"
+                        />
+                        <div>
+                          <span className="font-medium">{item.name}</span>
+                          <span className="text-gray-500 ml-1">(×{item.quantity})</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                   {order.orderItems.length > 2 && (
                     <div className="text-xs text-gray-500 antialiased">
                       +{order.orderItems.length - 2} autre{order.orderItems.length - 2 > 1 ? 's' : ''} article{order.orderItems.length - 2 > 1 ? 's' : ''}

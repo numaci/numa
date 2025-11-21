@@ -19,10 +19,18 @@ const geistMono = Geist_Mono({
 
 // Métadonnées de l'application pour le SEO et les réseaux sociaux
 export const metadata: Metadata = {
-  title: "E-commerce - Boutique en ligne", // Titre de la page
+  title: "Boutique officielle de NUMA", // Nouveau titre de la page
   description: "Votre boutique en ligne moderne avec administration complète", // Description pour les moteurs de recherche
   keywords: ["e-commerce", "boutique", "achat", "vente", "produits"], // Mots-clés SEO
   authors: [{ name: "Votre équipe" }], // Auteur du site
+  icons: {
+    icon: "/icone.jpg",
+    shortcut: "/icone.jpg",
+    apple: "/icone.jpg",
+  },
+  verification: {
+    google: 'RZKgrbUex0dWxZX92ajl4VJ1hBn-XAOrO72mfyFuwtQ',
+  },
 };
 
 // Configuration viewport séparée

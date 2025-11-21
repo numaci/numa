@@ -24,6 +24,7 @@ export default function CartPage() {
     error,
     removeFromCart,
     updateQuantity,
+    updateVariant,
     clearCart,
     totalPrice,
   } = useCart();
@@ -97,7 +98,7 @@ export default function CartPage() {
                 {items.map((item) => (
                   <tr key={item.productId} className="align-top hover:bg-gray-50 transition-colors">
                     {/* Produit */}
-                    <td className="px-6 py-4 flex items-center gap-4 min-w-[220px]">
+                    <td className="px-6 py-4 flex items-center gap-4 min-w-[260px]">
                       {item.imageUrl ? (
                         <Image src={item.imageUrl} alt={item.name} width={64} height={64} className="w-16 h-16 border border-gray-100 object-cover" />
                       ) : (
@@ -111,6 +112,25 @@ export default function CartPage() {
                         )}
                         {(item as any).model && (
                           <div className="text-xs text-gray-500">Modèle : {(item as any).model}</div>
+                        )}
+                        {/* Sélecteur de taille/variant si disponible */}
+                        {Array.isArray((item as any).availableVariants) && (item as any).availableVariants.length > 0 && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <label className="text-xs text-gray-500">
+                              {(item as any).variantName || 'Taille'}:
+                            </label>
+                            <select
+                              className="border border-gray-300 rounded px-2 py-1 text-xs bg-white"
+                              value={(item as any).variantId || ''}
+                              onChange={(e) => updateVariant(item.productId, e.target.value)}
+                            >
+                              {(item as any).availableVariants.map((v: any) => (
+                                <option key={v.id} value={v.id} disabled={v.stock === 0}>
+                                  {v.value}{v.stock === 0 ? ' — indisponible' : ''}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         )}
                         {/* Badge promo */}
                         {(item as any).comparePrice && (item as any).comparePrice > item.price && (
