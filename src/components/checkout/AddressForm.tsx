@@ -89,10 +89,10 @@ export default function AddressForm({ address, onAddressChange }: AddressFormPro
             required
           >
             <option value="">Sélectionner une ville</option>
-            <option value="Sikasso">Sikasso</option>
+            <option value="Sikasso">ABIDJAN</option>
           </select>
           <p className="text-sm text-gray-500 mt-1">
-            Livraison disponible uniquement à Sikasso
+            Livraison disponible uniquement À ABIDJAN
           </p>
         </div>
         <div>
@@ -117,7 +117,7 @@ export default function AddressForm({ address, onAddressChange }: AddressFormPro
           value={address.phone || ""}
           onChange={(e) => handleChange("phone", e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="+223 012345678"
+          placeholder="+225 0584220157"
           required
         />
       </div>
@@ -125,7 +125,7 @@ export default function AddressForm({ address, onAddressChange }: AddressFormPro
       <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
         <h4 className="font-medium text-blue-900 mb-2">Zone de livraison</h4>
         <p className="text-sm text-blue-700">
-          La livraison est actuellement disponible uniquement dans la ville de Sikasso, Mali.
+          La livraison est actuellement disponible uniquement dans la ville d'ABIDJAN, CÔTE D'IVOIRE.
           Pour toute autre localisation, veuillez nous contacter.
         </p>
       </div>
