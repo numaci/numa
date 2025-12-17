@@ -7,9 +7,9 @@ export const BRAND = {
 export const SOCIAL = {
   gmail: process.env.SOCIAL_GMAIL_URL || "mailto:numa7433@gmail.com",
   whatsapp: process.env.SOCIAL_WHATSAPP_URL || "https://wa.me/2250700247693",
-  facebook: process.env.SOCIAL_FACEBOOK_URL || "https://www.facebook.com/share/1KbQUNLiF3/?mibextid=wwXIfr",
+  facebook: process.env.SOCIAL_FACEBOOK_URL || "https://www.facebook.com/share/1BrrZwNqzz/?mibextid=wwXIfr",
   tiktok: process.env.SOCIAL_TIKTOK_URL || "https://www.tiktok.com/@numastyle2025",
-  instagram: process.env.SOCIAL_INSTAGRAM_URL || "https://www.instagram.com/numaci2025?igsh=N3N3M2VhY2F3ZzFm&utm_source=qr",
+  instagram: process.env.SOCIAL_INSTAGRAM_URL || "https://www.instagram.com/numaci2025?igsh=N3N3M2VhY2F3ZzFm&utm_source=q",
 };
 
 export const SOCIAL_LINKS: { name: "Gmail" | "WhatsApp" | "Facebook" | "TikTok" | "Instagram"; href: string }[] = [
